@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:17
+    container_name: dev-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: roors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5555:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - dev-network
+
+  pgadmin:
+    image: dpage/pgadmin4:9
+    container_name: dev-pgadmin
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - dev-network
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+
+networks:
+  dev-network:
+    driver: bridge
