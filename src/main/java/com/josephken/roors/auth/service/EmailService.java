@@ -1,5 +1,6 @@
 package com.josephken.roors.auth.service;
 
+import com.josephken.roors.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,11 +48,11 @@ public class EmailService {
             message.setText(emailBody);
             
             mailSender.send(message);
-            log.info("Password reset email sent successfully to: {}", toEmail);
+            log.info(LogCategory.system("Password reset email sent successfully - recipient: {}"), toEmail);
             
         } catch (Exception e) {
-            log.error("Failed to send password reset email to: {}. Error: {}", toEmail, e.getMessage());
-            log.error("Make sure email configuration is set up correctly. Check EMAIL_CONFIGURATION_GUIDE.md");
+            log.error(LogCategory.system("Failed to send password reset email - recipient: {}, error: {}"), toEmail, e.getMessage());
+            log.error(LogCategory.error("Email configuration may be incorrect. Check application.properties"));
             throw new RuntimeException("Failed to send password reset email. Please contact support.", e);
         }
     }

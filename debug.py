@@ -275,6 +275,13 @@ def run_all_tests():
     test_forgot_password_invalid_email()
     test_reset_password_invalid_token()
     
+    # Admin - Log management
+    test_view_logs()
+    test_view_logs(category="AUTH")
+    test_view_logs(level="WARN")
+    test_get_log_categories()
+    test_view_logs_no_auth()
+    
     print_separator("✅ TEST SUITE COMPLETED")
     print("\n📝 Note: To test reset_password with valid token:")
     print("   1. Check email inbox for the reset token")
@@ -327,6 +334,54 @@ def complete_password_reset(token, new_password):
 
 
 # ============================================================================
+# Admin - Log Management Tests
+# ============================================================================
+
+def test_view_logs(category=None, level=None, limit=50, page=1):
+    """Test GET /admin/logs - View logs with filters"""
+    print_separator("ADMIN - LOG MANAGEMENT TESTS")
+    
+    if not jwt_token:
+        print("❌ Skipping: No JWT token available. Run test_login() first.")
+        return None
+    
+    params = {
+        "limit": limit,
+        "page": page
+    }
+    if category:
+        params["category"] = category
+    if level:
+        params["level"] = level
+    
+    response = requests.get(
+        f"{BASE_URL}/admin/logs",
+        headers={"Authorization": f"Bearer {jwt_token}"},
+        params=params
+    )
+    return print_response(response, f"GET /admin/logs - View Logs (category={category}, level={level})")
+
+
+def test_get_log_categories():
+    """Test GET /admin/logs/categories - Get available log categories"""
+    if not jwt_token:
+        print("❌ Skipping: No JWT token available. Run test_login() first.")
+        return None
+    
+    response = requests.get(
+        f"{BASE_URL}/admin/logs/categories",
+        headers={"Authorization": f"Bearer {jwt_token}"}
+    )
+    return print_response(response, "GET /admin/logs/categories - Get Log Categories")
+
+
+def test_view_logs_no_auth():
+    """Test GET /admin/logs - View logs without authentication (should fail)"""
+    response = requests.get(f"{BASE_URL}/admin/logs")
+    return print_response(response, "GET /admin/logs - No Auth (Expected Failure)")
+
+
+# ============================================================================
 # Interactive Menu
 # ============================================================================
 
@@ -350,6 +405,11 @@ def show_menu():
     print("    test_change_password()       - POST /auth/change-password")
     print("    test_forgot_password()       - POST /auth/forgot-password")
     print("    test_reset_password(token)   - POST /auth/reset-password")
+    print("\n  Admin - Log Management:")
+    print("    test_view_logs()             - GET /admin/logs")
+    print("    test_view_logs('AUTH')       - GET /admin/logs?category=AUTH")
+    print("    test_view_logs(level='WARN') - GET /admin/logs?level=WARN")
+    print("    test_get_log_categories()    - GET /admin/logs/categories")
     print("\n  Utilities:")
     print("    show_menu()                  - Show this menu")
     print("=" * 70)
@@ -361,8 +421,7 @@ def show_menu():
 # ============================================================================
 
 if __name__ == "__main__":
-    # show_menu()
-    # print("\n🎯 Running all tests automatically...\n")
+    show_menu()
+    print("\n🎯 Running all tests automatically...\n")
     run_all_tests()
 
-    # test_reset_password("6ef87a6d-c147-43f2-967d-5f433a807660")
