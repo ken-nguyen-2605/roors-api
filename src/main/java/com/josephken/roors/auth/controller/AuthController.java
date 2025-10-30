@@ -1,13 +1,10 @@
 package com.josephken.roors.auth.controller;
 
 import com.josephken.roors.auth.JwtUtil;
-import com.josephken.roors.auth.dto.ErrorResponse;
-import com.josephken.roors.auth.dto.LoginRequest;
-import com.josephken.roors.auth.dto.LoginResponse;
-import com.josephken.roors.auth.dto.RegisterRequest;
-import com.josephken.roors.auth.dto.RegisterResponse;
+import com.josephken.roors.auth.dto.*;
 import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.repository.UserRepository;
+import com.josephken.roors.auth.service.PasswordService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +13,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +26,19 @@ public class AuthController {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private JwtUtil jwtUtil;
+    private PasswordService passwordService;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          PasswordService passwordService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.passwordService = passwordService;
     }
 
     @PostMapping("/register")
@@ -57,11 +58,10 @@ public class AuthController {
         }
 
         // Create new user
-        final User user = new User(
-                null,
-                request.getUsername(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getEmail());
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
 
         userRepository.save(user);
 
@@ -116,5 +116,68 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(errorMessage, HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            // Get the authenticated user's username
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            // Check if user is authenticated
+            if (authentication == null || !authentication.isAuthenticated() || 
+                "anonymousUser".equals(authentication.getPrincipal())) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
+            }
+            
+            String username = authentication.getName();
+            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
+
+            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while changing password", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        try {
+            passwordService.initiatePasswordReset(request.getEmail());
+            return ResponseEntity.ok(new MessageResponse("Password reset link has been sent to your email"));
+            
+        } catch (RuntimeException e) {
+            // For security reasons, don't reveal if email exists or not
+            return ResponseEntity.ok(new MessageResponse("If the email exists, a password reset link has been sent"));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while processing your request", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        try {
+            passwordService.resetPassword(request.getToken(), request.getNewPassword());
+            return ResponseEntity.ok(new MessageResponse("Password has been reset successfully"));
+            
+        } catch (RuntimeException e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while resetting password", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
     }
 }
