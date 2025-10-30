@@ -1,14 +1,13 @@
 package com.josephken.roors.auth.controller;
 
 import com.josephken.roors.auth.JwtUtil;
-import com.josephken.roors.auth.dto.ErrorResponse;
-import com.josephken.roors.auth.dto.LoginRequest;
-import com.josephken.roors.auth.dto.LoginResponse;
-import com.josephken.roors.auth.dto.RegisterRequest;
-import com.josephken.roors.auth.dto.RegisterResponse;
+import com.josephken.roors.auth.dto.*;
 import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.repository.UserRepository;
+import com.josephken.roors.auth.service.PasswordService;
+import com.josephken.roors.util.LogCategory;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +15,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -28,22 +29,28 @@ public class AuthController {
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
     private JwtUtil jwtUtil;
+    private PasswordService passwordService;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
                           UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
-                          JwtUtil jwtUtil) {
+                          JwtUtil jwtUtil,
+                          PasswordService passwordService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.passwordService = passwordService;
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
+        log.info(LogCategory.user("Registration attempt - username: {}, email: {}"), request.getUsername(), request.getEmail());
+        
         // Check if username already exists
         if (userRepository.existsByUsername(request.getUsername())) {
+            log.warn(LogCategory.user("Registration failed - Username already taken: {}"), request.getUsername());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse("Username is already taken", HttpStatus.BAD_REQUEST.value()));
@@ -51,19 +58,20 @@ public class AuthController {
 
         // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn(LogCategory.user("Registration failed - Email already registered: {}"), request.getEmail());
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorResponse("Email is already registered", HttpStatus.BAD_REQUEST.value()));
         }
 
         // Create new user
-        final User user = new User(
-                null,
-                request.getUsername(),
-                passwordEncoder.encode(request.getPassword()),
-                request.getEmail());
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmail(request.getEmail());
 
         userRepository.save(user);
+        log.info(LogCategory.user("Registration successful - username: {}"), request.getUsername());
 
         // Prepare response
         RegisterResponse response = new RegisterResponse();
@@ -75,6 +83,8 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
+        log.info(LogCategory.user("Login attempt - username: {}"), request.getUsername());
+        
         try {
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
@@ -88,6 +98,8 @@ public class AuthController {
             final UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(userDetails.getUsername());
 
+            log.info(LogCategory.user("Login successful - username: {}"), request.getUsername());
+            
             // Prepare response
             LoginResponse response = new LoginResponse();
             response.setToken(token);
@@ -95,10 +107,12 @@ public class AuthController {
             return ResponseEntity.ok(response);
             
         } catch (BadCredentialsException e) {
+            log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), request.getUsername());
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
         } catch (Exception e) {
+            log.error(LogCategory.error("Login error - username: {}, error: {}"), request.getUsername(), e.getMessage());
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("An error occurred during login", HttpStatus.INTERNAL_SERVER_ERROR.value()));
@@ -116,5 +130,79 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(errorMessage, HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            // Get the authenticated user's username
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            
+            // Check if user is authenticated
+            if (authentication == null || !authentication.isAuthenticated() || 
+                "anonymousUser".equals(authentication.getPrincipal())) {
+                log.warn(LogCategory.user("Change password failed - User not authenticated"));
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
+            }
+            
+            String username = authentication.getName();
+            log.info(LogCategory.user("Change password attempt - user: {}"), username);
+            
+            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
+            
+            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
+            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+            
+        } catch (RuntimeException e) {
+            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        } catch (Exception e) {
+            log.error(LogCategory.error("Change password error - {}"), e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while changing password", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        log.info(LogCategory.user("Forgot password request - email: {}"), request.getEmail());
+        try {
+            passwordService.initiatePasswordReset(request.getEmail());
+            return ResponseEntity.ok(new MessageResponse("Password reset link has been sent to your email"));
+            
+        } catch (RuntimeException e) {
+            // For security reasons, don't reveal if email exists or not
+            return ResponseEntity.ok(new MessageResponse("If the email exists, a password reset link has been sent"));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while processing your request", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        log.info(LogCategory.user("Password reset attempt - token: {}..."), request.getToken().substring(0, Math.min(8, request.getToken().length())));
+        
+        try {
+            passwordService.resetPassword(request.getToken(), request.getNewPassword());
+            log.info(LogCategory.user("Password reset successful - token: {}..."), request.getToken().substring(0, Math.min(8, request.getToken().length())));
+            return ResponseEntity.ok(new MessageResponse("Password has been reset successfully"));
+            
+        } catch (RuntimeException e) {
+            log.warn(LogCategory.user("Password reset failed - {}"), e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while resetting password", HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
     }
 }

@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
+                        .requestMatchers("/admin/**").authenticated()  // Admin endpoints require authentication
                         .anyRequest().authenticated());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
