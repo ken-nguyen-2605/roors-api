@@ -25,6 +25,36 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
+    public void sendVerificationEmail(String toEmail, String verificationToken) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("Email Verification - Roors API");
+
+            String verificationUrl = baseUrl + "/auth/verify-email?token=" + verificationToken;
+
+            String emailBody = "Welcome to Roors API!\n\n" +
+                    "Please verify your email address by clicking the link below:\n" +
+                    verificationUrl + "\n\n" +
+                    "Or use this token in your API request:\n" +
+                    verificationToken + "\n\n" +
+                    "This link will expire in 24 hours.\n\n" +
+                    "Best regards,\n" +
+                    "Roors API Team";
+
+            message.setText(emailBody);
+
+            mailSender.send(message);
+            log.info(LogCategory.system("Verification email sent successfully - recipient: {}"), toEmail);
+
+        } catch (Exception e) {
+            log.error(LogCategory.system("Failed to send verification email - recipient: {}, error: {}"), toEmail, e.getMessage());
+            log.error(LogCategory.error("Email configuration may be incorrect. Check application.properties"));
+            throw new RuntimeException("Failed to send verification email. Please contact support.", e);
+        }
+    }
+
     public void sendPasswordResetEmail(String toEmail, String resetToken) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();

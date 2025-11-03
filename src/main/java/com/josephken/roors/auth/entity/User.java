@@ -27,7 +27,11 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private String email;
-    
+
+    private boolean isVerified = false;
+    private String verifyToken;
+    private LocalDateTime verifyTokenExpiry;
+
     private String resetToken;
     private LocalDateTime resetTokenExpiry;
 
