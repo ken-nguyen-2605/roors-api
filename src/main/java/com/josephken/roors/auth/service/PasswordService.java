@@ -1,6 +1,9 @@
 package com.josephken.roors.auth.service;
 
 import com.josephken.roors.auth.entity.User;
+import com.josephken.roors.auth.exception.EmailNotFoundException;
+import com.josephken.roors.auth.exception.InvalidTokenException;
+import com.josephken.roors.auth.exception.UserNotFoundException;
 import com.josephken.roors.auth.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,6 +19,7 @@ public class PasswordService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final String FORGOT_PASSWORD_RESPONSE = "Password reset email sent. Please check your inbox.";
 
     @Autowired
     public PasswordService(UserRepository userRepository, 
@@ -29,7 +33,7 @@ public class PasswordService {
     @Transactional
     public void changePassword(String username, String oldPassword, String newPassword) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             throw new RuntimeException("Old password is incorrect");
@@ -42,7 +46,11 @@ public class PasswordService {
     @Transactional
     public void initiatePasswordReset(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("No user found with this email"));
+                .orElseThrow(() -> new EmailNotFoundException(
+                        "Email not found: " + email,
+                        email,
+                        FORGOT_PASSWORD_RESPONSE
+                ));
 
         String resetToken = UUID.randomUUID().toString();
         
@@ -57,10 +65,10 @@ public class PasswordService {
     @Transactional
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByResetToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid reset token"));
+                .orElseThrow(() -> new InvalidTokenException("Invalid reset token"));
 
         if (user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Reset token has expired");
+            throw new InvalidTokenException("Reset token has expired");
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));

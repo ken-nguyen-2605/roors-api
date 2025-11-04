@@ -1,31 +1,20 @@
 package com.josephken.roors.auth.controller;
 
-import com.josephken.roors.auth.JwtUtil;
 import com.josephken.roors.auth.dto.*;
-import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.exception.EmailNotFoundException;
+import com.josephken.roors.auth.exception.EmailNotVerifiedException;
 import com.josephken.roors.auth.exception.InvalidTokenException;
-import com.josephken.roors.auth.repository.UserRepository;
+import com.josephken.roors.auth.exception.UserNotFoundException;
 import com.josephken.roors.auth.service.AuthService;
-import com.josephken.roors.auth.service.EmailService;
-import com.josephken.roors.auth.service.PasswordService;
 import com.josephken.roors.util.LogCategory;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -33,252 +22,155 @@ import java.util.UUID;
 public class AuthController {
 
     private final AuthService authService;
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final PasswordService passwordService;
-    private final EmailService emailService;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager,
-                          UserRepository userRepository,
-                          PasswordEncoder passwordEncoder,
-                          JwtUtil jwtUtil,
-                          PasswordService passwordService,
-                          EmailService emailService,
-                          AuthService authService) {
-        this.authenticationManager = authenticationManager;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-        this.passwordService = passwordService;
-        this.emailService = emailService;
+    public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest request) {
-        log.info(LogCategory.user("Registration attempt - username: {}, email: {}"), request.getUsername(), request.getEmail());
-        
-        // Check if username already exists
-        if (userRepository.existsByUsername(request.getUsername())) {
-            log.warn(LogCategory.user("Registration failed - Username already taken: {}"), request.getUsername());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Username is already taken", HttpStatus.BAD_REQUEST.value()));
-        }
-
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            log.warn(LogCategory.user("Registration failed - Email already registered: {}"), request.getEmail());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse("Email is already registered", HttpStatus.BAD_REQUEST.value()));
-        }
-
-        // Generate verify token
-        String verifyToken = UUID.randomUUID().toString();
-
-        // Create new user
-        User user = new User();
-        user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEmail(request.getEmail());
-        user.setVerified(false);
-        user.setVerifyToken(verifyToken);
-        user.setVerifyTokenExpiry(LocalDateTime.now().plusHours(24));
-
-        userRepository.save(user);
-        log.info(LogCategory.user("Registration successful - username: {}"), request.getUsername());
-
-        // Send verification email
-        emailService.sendVerificationEmail(request.getEmail(), verifyToken);
-        log.info(LogCategory.user("Verification email sent - email: {}"), request.getEmail());
-
-        // Prepare response
-        RegisterResponse response = new RegisterResponse();
-        response.setUsername(user.getUsername());
-        response.setEmail(user.getEmail());
-        response.setMessage("User registered successfully. Please check your email to verify your account.");
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(authService.register(
+                        registerRequest.getUsername(),
+                        registerRequest.getEmail(),
+                        registerRequest.getPassword()
+                ));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest request) {
-        log.info(LogCategory.user("Login attempt - username: {}"), request.getUsername());
-        
-        try {
-            // Authenticate user
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsername(), 
-                            request.getPassword()
-                    )
-            );
-
-            // Get user details and generate token
-            final User user = (User) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(user.getUsername());
-
-            if (!user.isVerified()) {
-                log.warn(LogCategory.user("Login failed - Email not verified for username: {}"), request.getUsername());
-                return ResponseEntity
-                        .status(HttpStatus.FORBIDDEN)
-                        .body(new ErrorResponse("Email not verified. Please verify your email before logging in.", HttpStatus.FORBIDDEN.value()));
-            }
-
-            log.info(LogCategory.user("Login successful - username: {}"), request.getUsername());
-            
-            // Prepare response
-            LoginResponse response = new LoginResponse();
-            response.setToken(token);
-
-            return ResponseEntity.ok(response);
-            
-        } catch (BadCredentialsException e) {
-            log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), request.getUsername());
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
-        } catch (Exception e) {
-            log.error(LogCategory.error("Login error - username: {}, error: {}"), request.getUsername(), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An error occurred during login", HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        }
+    public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.login(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                ));
     }
 
-    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    /* Change password required the user to be authenticated,
+       so maybe better handled in UserController
+    */
+//
+//    @PostMapping("/change-password")
+//    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+//        try {
+//            // Get the authenticated user's username
+//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//
+//            // Check if user is authenticated
+//            if (authentication == null || !authentication.isAuthenticated() ||
+//                "anonymousUser".equals(authentication.getPrincipal())) {
+//                log.warn(LogCategory.user("Change password failed - User not authenticated"));
+//                return ResponseEntity
+//                        .status(HttpStatus.UNAUTHORIZED)
+//                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
+//            }
+//
+//            String username = authentication.getName();
+//            log.info(LogCategory.user("Change password attempt - user: {}"), username);
+//
+//            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
+//
+//            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
+//            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+//
+//        } catch (RuntimeException e) {
+//            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
+//            return ResponseEntity
+//                    .status(HttpStatus.BAD_REQUEST)
+//                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+//        }
+//    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.forgotPassword(request.getEmail()));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.resetPassword(request.getToken(), request.getNewPassword()));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerificationEmail(@Valid @RequestBody ResendEmailRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.resendVerification(request.getEmail()));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.verifyEmail(token));
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
+        log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        log.warn(LogCategory.user("Login failed - User not found: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    @ExceptionHandler(EmailNotVerifiedException.class)
+    public ResponseEntity<ErrorResponse> handleEmailNotVerifiedException(EmailNotVerifiedException ex) {
+        log.warn(LogCategory.user("Login failed - Email not verified: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value()));
+    }
+
+    @ExceptionHandler(EmailNotFoundException.class)
+    public ResponseEntity<MessageResponse> handleEmailNotFoundException(EmailNotFoundException ex) {
+        log.warn(LogCategory.user("Email not found - {}"), ex.getMessage());
+        // Always return 200 OK to prevent email enumeration
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new MessageResponse(ex.getResponseMessage()));
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+        log.warn(LogCategory.user("Invalid token - {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
-            org.springframework.web.bind.MethodArgumentNotValidException ex) {
+            MethodArgumentNotValidException ex) {
         String errorMessage = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> error.getDefaultMessage())
                 .findFirst()
                 .orElse("Validation error");
-        
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(errorMessage, HttpStatus.BAD_REQUEST.value()));
     }
 
-    @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        try {
-            // Get the authenticated user's username
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            
-            // Check if user is authenticated
-            if (authentication == null || !authentication.isAuthenticated() || 
-                "anonymousUser".equals(authentication.getPrincipal())) {
-                log.warn(LogCategory.user("Change password failed - User not authenticated"));
-                return ResponseEntity
-                        .status(HttpStatus.UNAUTHORIZED)
-                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
-            }
-            
-            String username = authentication.getName();
-            log.info(LogCategory.user("Change password attempt - user: {}"), username);
-            
-            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
-            
-            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
-            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
-            
-        } catch (RuntimeException e) {
-            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
-        } catch (Exception e) {
-            log.error(LogCategory.error("Change password error - {}"), e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An error occurred while changing password", HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        }
-    }
-
-    @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        log.info(LogCategory.user("Forgot password request - email: {}"), request.getEmail());
-        try {
-            passwordService.initiatePasswordReset(request.getEmail());
-            return ResponseEntity.ok(new MessageResponse("Password reset link has been sent to your email"));
-            
-        } catch (RuntimeException e) {
-            // For security reasons, don't reveal if email exists or not
-            return ResponseEntity.ok(new MessageResponse("If the email exists, a password reset link has been sent"));
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An error occurred while processing your request", HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        }
-    }
-
-    @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        log.info(LogCategory.user("Password reset attempt - token: {}..."), request.getToken().substring(0, Math.min(8, request.getToken().length())));
-        
-        try {
-            passwordService.resetPassword(request.getToken(), request.getNewPassword());
-            log.info(LogCategory.user("Password reset successful - token: {}..."), request.getToken().substring(0, Math.min(8, request.getToken().length())));
-            return ResponseEntity.ok(new MessageResponse("Password has been reset successfully"));
-            
-        } catch (RuntimeException e) {
-            log.warn(LogCategory.user("Password reset failed - {}"), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
-        } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An error occurred while resetting password", HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        }
-    }
-
-    @PostMapping("/resend-verification")
-    public ResponseEntity<?> resendVerificationEmail(@Valid @RequestBody ResendEmailRequest request) {
-        log.info(LogCategory.user("Resend verification email request - email: {}"), request.getEmail());
-
-        try {
-            authService.resendVerification(request.getEmail());
-            return ResponseEntity.ok(new MessageResponse("Verification email has been resent"));
-
-        } catch (EmailNotFoundException e) {
-            log.warn(LogCategory.user("Resend verification email failed - {}"), e.getMessage());
-            // For security, do not reveal if email exists
-            return ResponseEntity.ok(new MessageResponse("Verification email has been resent"));
-
-        } catch (Exception e) {
-            log.error(LogCategory.error("Resend verification email error - {}"), e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An error occurred while resending verification email",
-                            HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        }
-    }
-
-    @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestParam String token) {
-        String shortenedToken = token.substring(0, Math.min(8, token.length()));
-
-        log.info(LogCategory.user("Email verification attempt - token: {}..."), shortenedToken);
-
-        try {
-            authService.verifyEmail(token);
-            log.info(LogCategory.user("Email verified successfully - token: {}..."), shortenedToken);
-            return ResponseEntity.ok(new MessageResponse("Email has been verified successfully"));
-        } catch (InvalidTokenException e) {
-            log.warn(LogCategory.user("Email verification failed - {}"), e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
-        } catch (Exception e) {
-            log.error(LogCategory.error("Email verification error - {}"), e.getMessage(), e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("An error occurred while verifying email", HttpStatus.INTERNAL_SERVER_ERROR.value()));
-        }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
+        log.error(LogCategory.error("General error - {}"), ex.getMessage(), ex);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorResponse("An internal server error occurred", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 }
