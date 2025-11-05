@@ -28,15 +28,44 @@ public class User implements UserDetails {
     private String password;
     private String email;
 
+    @Column(name = "is_verified")
     private boolean isVerified = false;
+    
+    @Column(name = "verify_token")
     private String verifyToken;
+    
+    @Column(name = "verify_token_expiry")
     private LocalDateTime verifyTokenExpiry;
 
+    @Column(name = "reset_token")
     private String resetToken;
+    
+    @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
 
+    // UserDetails methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return isVerified;
     }
 }

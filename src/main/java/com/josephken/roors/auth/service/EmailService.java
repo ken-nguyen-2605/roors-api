@@ -1,15 +1,16 @@
 package com.josephken.roors.auth.service;
 
 import com.josephken.roors.util.LogCategory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class EmailService {
 
     private final JavaMailSender mailSender;
@@ -20,11 +21,6 @@ public class EmailService {
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
 
-    @Autowired
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
     public void sendVerificationEmail(String toEmail, String verificationToken) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -32,7 +28,7 @@ public class EmailService {
             message.setTo(toEmail);
             message.setSubject("Email Verification - Roors API");
 
-            String verificationUrl = baseUrl + "/auth/verify-email?token=" + verificationToken;
+            String verificationUrl = baseUrl + "/api/auth/verify-email?token=" + verificationToken;
 
             String emailBody = "Welcome to Roors API!\n\n" +
                     "Please verify your email address by clicking the link below:\n" +
@@ -62,7 +58,7 @@ public class EmailService {
             message.setTo(toEmail);
             message.setSubject("Password Reset Request - Roors API");
             
-            String resetUrl = baseUrl + "/auth/reset-password?token=" + resetToken;
+            String resetUrl = baseUrl + "/api/auth/reset-password?token=" + resetToken;
             
             String emailBody = "Hello,\n\n" +
                     "You have requested to reset your password.\n\n" +
