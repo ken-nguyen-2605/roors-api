@@ -6,6 +6,7 @@ public class LogCategory {
     public static final String MENU = "[MENU]";           // Menu operations (add, update, delete dishes)
     public static final String ORDER = "[ORDER]";         // Order operations (create, update, cancel)
     public static final String RESERVATION = "[RESERVATION]"; // Reservation operations (book, cancel, modify)
+    public static final String TABLE = "[TABLE]";       // Dining table operations
     public static final String PAYMENT = "[PAYMENT]";     // Payment operations
     public static final String ADMIN = "[ADMIN]";         // Admin operations
     public static final String SYSTEM = "[SYSTEM]";       // System events
@@ -31,7 +32,9 @@ public class LogCategory {
     public static String reservation(String message) {
         return format(RESERVATION, message);
     }
-    
+
+    public static String table(String message) { return format(TABLE, message); }
+
     public static String payment(String message) {
         return format(PAYMENT, message);
     }

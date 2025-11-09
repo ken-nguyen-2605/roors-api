@@ -41,9 +41,14 @@ public class SecurityConfiguration {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
-                        .requestMatchers("/admin/**").authenticated()  // Admin endpoints require authentication
+                        .requestMatchers("/api/admin/**").authenticated()  // Admin endpoints require authentication
+                        .requestMatchers("/api/reservations/availability",
+                                "/api/reservations/date-time-availability").permitAll()
+                        .requestMatchers("/api/reservations/**").authenticated()
+                        .requestMatchers("/api/tables/**").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated());
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();

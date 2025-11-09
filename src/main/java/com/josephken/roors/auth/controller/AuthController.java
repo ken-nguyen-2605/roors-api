@@ -1,10 +1,7 @@
 package com.josephken.roors.auth.controller;
 
 import com.josephken.roors.auth.dto.*;
-import com.josephken.roors.auth.exception.EmailNotFoundException;
-import com.josephken.roors.auth.exception.EmailNotVerifiedException;
-import com.josephken.roors.auth.exception.InvalidTokenException;
-import com.josephken.roors.auth.exception.UserNotFoundException;
+import com.josephken.roors.auth.exception.*;
 import com.josephken.roors.auth.service.AuthService;
 import com.josephken.roors.util.LogCategory;
 import jakarta.validation.Valid;
@@ -18,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
@@ -118,6 +115,14 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
+        log.warn(LogCategory.user("Registration failed - User already exists: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(ex.getMessage(), HttpStatus.CONFLICT.value()));
     }
 
     @ExceptionHandler(UserNotFoundException.class)
