@@ -2,7 +2,6 @@ package com.josephken.roors.common.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.josephken.roors.auth.dto.ErrorResponse;
-import com.josephken.roors.common.dto.BaseResponse;
 import com.josephken.roors.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
@@ -32,11 +31,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .status(HttpStatus.METHOD_NOT_ALLOWED.value())
-                .message(ex.getMessage())
-                .timestamp(System.currentTimeMillis())
-                .build();
+        ErrorResponse errorResponse = new ErrorResponse(
+                "HTTP method " + ex.getMethod() + " is not supported for this endpoint",
+                HttpStatus.METHOD_NOT_ALLOWED.value());
 
         log.warn(LogCategory.error("Handling HttpRequestMethodNotSupportedException: {}"), ex.getMessage());
         return ResponseEntity
@@ -50,15 +47,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationErrors(
             MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .findFirst()
+                .map(FieldError::getDefaultMessage)
+                .orElse("Validation failed");
 
-        ErrorResponse response = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(ex.getBindingResult().getFieldErrors().stream()
-                        .findFirst()
-                        .map(FieldError::getDefaultMessage)
-                        .orElse("Validation failed"))
-                .timestamp(System.currentTimeMillis())
-                .build();
+        ErrorResponse response = new ErrorResponse(message, HttpStatus.BAD_REQUEST.value());
 
         log.warn(LogCategory.error("Handling MethodArgumentNotValidException: {}"), response.getMessage());
         return ResponseEntity
@@ -177,11 +171,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(
             IllegalArgumentException ex) {
-
-        ErrorResponse response = ErrorResponse.builder()
-                .status(HttpStatus.BAD_REQUEST.value())
-                .message(ex.getMessage())
-                .build();
+        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
 
         log.warn(LogCategory.error("Handling IllegalArgumentException: {}"), response.getMessage());
         return ResponseEntity
@@ -190,21 +180,25 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException ex) {
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
+        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+
         log.warn(LogCategory.error("Handling BusinessException: {}"), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(BaseResponse.error(ex.getMessage()));
+                .body(response);
     }
 
     /**
      * Handle all other exceptions -> 500 Internal Server Error.
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<BaseResponse<?>> handleException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
         log.error(LogCategory.error("Handling Unexpected Exception: {}"), ex.getMessage(), ex);
+
+        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(BaseResponse.error("Internal server error: " + ex.getMessage()));
+                .body(response);
     }
 }

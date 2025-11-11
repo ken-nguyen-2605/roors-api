@@ -4,6 +4,7 @@ import com.josephken.roors.auth.dto.ErrorResponse;
 import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.common.exception.BusinessException;
 import com.josephken.roors.reservation.dto.*;
+import com.josephken.roors.reservation.exception.CapacityExceededException;
 import com.josephken.roors.reservation.exception.TableNotAvailableException;
 import com.josephken.roors.reservation.exception.TimeNotValidException;
 import com.josephken.roors.reservation.service.ReservationTableServiceImpl;
@@ -54,7 +55,7 @@ public class ReservationController {
     public ResponseEntity<ReservationDto> createReservation(
             @AuthenticationPrincipal User user,
             @Valid @RequestBody CreateReservationDto createReservationDto
-            ) {
+    ) {
         ReservationDto createdReservation = reservationTableService.createReservation(user.getId(), createReservationDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -66,7 +67,7 @@ public class ReservationController {
             @AuthenticationPrincipal User user,
             @PathVariable Long id,
             @Valid @RequestBody UpdateReservationDto updateReservationDto
-            ) {
+    ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(reservationTableService.updateReservation(user.getId(), id, updateReservationDto));
@@ -90,10 +91,11 @@ public class ReservationController {
     }
 
     /**
-      * Handle conflict exception
-      */
+     * Handle conflict exception
+     */
     @ExceptionHandler({
             TableNotAvailableException.class,
+            CapacityExceededException.class
     })
     public ResponseEntity<ErrorResponse> handleConflictException(BusinessException ex) {
         ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), HttpStatus.CONFLICT.value());

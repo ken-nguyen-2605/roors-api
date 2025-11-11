@@ -8,7 +8,7 @@ public class WelcomeController {
     
     @GetMapping("/")
     public String welcome() {
-        return "Welcome to Roors API! Try /auth/register or /auth/login";
+        return "Welcome to Roors API! Try /api/auth/register or /api/auth/login";
     }
     
     @GetMapping("/health")

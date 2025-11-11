@@ -57,3 +57,65 @@
 2025-10-30 13:28:43 [http-nio-8080-exec-2] INFO  c.j.r.admin.controller.LogController - [ADMIN] Viewing logs - category: AUTH, level: null, limit: 50, page: 1
 2025-10-30 13:28:43 [http-nio-8080-exec-4] INFO  c.j.r.admin.controller.LogController - [ADMIN] Viewing logs - category: null, level: WARN, limit: 50, page: 1
 2025-10-30 13:28:43 [http-nio-8080-exec-6] INFO  c.j.r.admin.controller.LogController - [ADMIN] Requesting log categories
+2025-11-12 01:22:02 [main] INFO  c.josephken.roors.RoorsApplication - Starting RoorsApplication using Java 25 with PID 10320 (C:\Users\Windows\Desktop\HCMUT\HK251\Integration Project\roors\target\classes started by Ken in C:\Users\Windows\Desktop\HCMUT\HK251\Integration Project\roors)
+2025-11-12 01:22:02 [main] DEBUG c.josephken.roors.RoorsApplication - Running with Spring Boot v3.5.6, Spring v6.2.11
+2025-11-12 01:22:02 [main] INFO  c.josephken.roors.RoorsApplication - The following 1 profile is active: "dev"
+2025-11-12 01:22:04 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-11-12 01:22:04 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 115 ms. Found 8 JPA repository interfaces.
+2025-11-12 01:22:05 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2025-11-12 01:22:05 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-11-12 01:22:05 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.46]
+2025-11-12 01:22:05 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-11-12 01:22:05 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2386 ms
+2025-11-12 01:22:05 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-11-12 01:22:05 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.6.29.Final
+2025-11-12 01:22:05 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-11-12 01:22:06 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-11-12 01:22:06 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-11-12 01:22:06 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4db6348b
+2025-11-12 01:22:06 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-11-12 01:22:06 [main] INFO  o.hibernate.orm.connections.pooling - HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.6
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-11-12 01:22:08 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - constraint "ukt8o6pivur7nn124jehx7cygw5" of relation "categories" does not exist, skipping
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - constraint "ukoul14ho7bctbefv8jywp5v3i2" of relation "categories" does not exist, skipping
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - constraint "ukr8j2yaqdtjhetgvyrly2p85i4" of relation "menu_items" does not exist, skipping
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - constraint "uknthkiu7pgmnqnu86i2jyoe2v7" of relation "orders" does not exist, skipping
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - constraint "ukn939tpje3kshdfk6pbi7ewwj7" of relation "payments" does not exist, skipping
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Warning Code: 0, SQLState: 00000
+2025-11-12 01:22:09 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - constraint "uk8vo36cen604as7etdfwmyjsxt" of relation "payments" does not exist, skipping
+2025-11-12 01:22:09 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-11-12 01:22:10 [main] DEBUG c.j.roors.auth.JwtTokenFilter - Filter 'jwtTokenFilter' configured for use
+2025-11-12 01:22:10 [main] DEBUG c.j.roors.auth.JwtTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-11-12 01:22:10 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-11-12 01:22:14 [main] INFO  o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer - Global AuthenticationManager configured with UserDetailsService bean with name userService
+2025-11-12 01:22:15 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-11-12 01:22:17 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8080 (http) with context path '/'
+2025-11-12 01:22:17 [main] INFO  c.josephken.roors.RoorsApplication - Started RoorsApplication in 15.772 seconds (process running for 16.859)
+2025-11-12 01:23:12 [http-nio-8080-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-11-12 01:23:12 [http-nio-8080-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-11-12 01:23:12 [http-nio-8080-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-11-12 01:23:12 [http-nio-8080-exec-2] ERROR com.josephken.roors.auth.JwtUtil - JWT validation error: JWT expired 1063801 milliseconds ago at 2025-11-11T18:05:29.000Z. Current time: 2025-11-11T18:23:12.801Z. Allowed clock skew: 0 milliseconds.
+2025-11-12 01:23:23 [http-nio-8080-exec-3] INFO  c.j.roors.auth.service.AuthService - [USER] Login attempt - username: josephken020605
+2025-11-12 01:23:24 [http-nio-8080-exec-3] INFO  c.j.roors.auth.service.AuthService - [USER] Login successful - username: josephken020605
+2025-11-12 01:23:36 [http-nio-8080-exec-4] WARN  c.j.r.c.e.GlobalExceptionHandler - [ERROR] Handling MethodArgumentNotValidException: At least one guest is required
+2025-11-12 01:23:47 [http-nio-8080-exec-8] WARN  c.j.r.c.e.GlobalExceptionHandler - [ERROR] Handling MethodArgumentNotValidException: Dining table ID is required
+2025-11-12 01:23:56 [http-nio-8080-exec-6] INFO  c.j.r.r.s.ReservationTableServiceImpl - [RESERVATION] Creating reservation for user with id: 502
+2025-11-12 01:23:56 [http-nio-8080-exec-6] WARN  c.j.r.r.s.ReservationTableServiceImpl - [RESERVATION] Dining table id: 41 cannot accommodate 2 guests
+2025-11-12 01:23:56 [http-nio-8080-exec-6] WARN  c.j.r.c.e.GlobalExceptionHandler - [ERROR] Handling BusinessException: The selected dining table cannot accommodate the number of guests.
+2025-11-12 01:28:17 [SpringApplicationShutdownHook] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-12 01:28:17 [tomcat-shutdown] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2025-11-12 01:28:17 [SpringApplicationShutdownHook] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-12 01:28:17 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2025-11-12 01:28:17 [SpringApplicationShutdownHook] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
