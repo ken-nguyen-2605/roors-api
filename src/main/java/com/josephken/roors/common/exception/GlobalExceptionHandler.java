@@ -3,14 +3,13 @@ package com.josephken.roors.common.exception;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.josephken.roors.auth.dto.ErrorResponse;
 import com.josephken.roors.common.dto.BaseResponse;
-import lombok.RequiredArgsConstructor;
+import com.josephken.roors.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -18,11 +17,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -33,7 +28,7 @@ public class GlobalExceptionHandler {
     private static final String DATE_TIME_FORMAT = "yyyy-MM-ddTHH:mm:ss";
 
     /**
-     * Handle unsupported HTTP methods -> 405 Method Not Allowed.
+     * Handle unsupported HTTP methods -> 405 Method Not Allowed
      */
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
@@ -43,6 +38,7 @@ public class GlobalExceptionHandler {
                 .timestamp(System.currentTimeMillis())
                 .build();
 
+        log.warn(LogCategory.error("Handling HttpRequestMethodNotSupportedException: {}"), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body(errorResponse);
@@ -57,17 +53,14 @@ public class GlobalExceptionHandler {
 
         ErrorResponse response = ErrorResponse.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .message("Validation failed for one or more fields.")
+                .message(ex.getBindingResult().getFieldErrors().stream()
+                        .findFirst()
+                        .map(FieldError::getDefaultMessage)
+                        .orElse("Validation failed"))
                 .timestamp(System.currentTimeMillis())
-                .validationErrors(
-                        ex.getBindingResult().getFieldErrors().stream()
-                                .collect(Collectors.toMap(
-                                        fieldError -> fieldError.getField(),
-                                        fieldError -> fieldError.getDefaultMessage()
-                                ))
-                )
                 .build();
 
+        log.warn(LogCategory.error("Handling MethodArgumentNotValidException: {}"), response.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
@@ -107,7 +100,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(message, HttpStatus.BAD_REQUEST.value());
 
-        log.info("Type mismatch error: {}", message);
+        log.warn(LogCategory.error("Handling MethodArgumentTypeMismatchException: {}"), message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
@@ -156,7 +149,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(message, HttpStatus.BAD_REQUEST.value());
 
-        log.info("HttpMessageNotReadableException error: {}", message);
+        log.warn(LogCategory.error("Handling HttpMessageNotReadableException: {}"), message);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errorResponse);
@@ -172,7 +165,7 @@ public class GlobalExceptionHandler {
 
         ErrorResponse errorResponse = new ErrorResponse(message, HttpStatus.BAD_REQUEST.value());
 
-        log.info("MissingServletRequestParameterException error: {}", message);
+        log.warn(LogCategory.error("Handling MissingServletRequestParameterException: {}"), message);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(errorResponse);
@@ -190,6 +183,7 @@ public class GlobalExceptionHandler {
                 .message(ex.getMessage())
                 .build();
 
+        log.warn(LogCategory.error("Handling IllegalArgumentException: {}"), response.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(response);
@@ -197,7 +191,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<BaseResponse<?>> handleBusinessException(BusinessException ex) {
-        log.warn(ex.getMessage());
+        log.warn(LogCategory.error("Handling BusinessException: {}"), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(BaseResponse.error(ex.getMessage()));
@@ -208,6 +202,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<BaseResponse<?>> handleException(Exception ex) {
+        log.error(LogCategory.error("Handling Unexpected Exception: {}"), ex.getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(BaseResponse.error("Internal server error: " + ex.getMessage()));
