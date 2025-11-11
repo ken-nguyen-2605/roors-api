@@ -1,4 +1,4 @@
-package com.josephken.roors.controller;
+package com.josephken.roors.common.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

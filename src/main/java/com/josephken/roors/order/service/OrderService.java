@@ -11,7 +11,7 @@ import com.josephken.roors.order.repository.OrderRepository;
 import com.josephken.roors.payment.dto.PaymentResponse;
 import com.josephken.roors.payment.entity.Payment;
 import com.josephken.roors.payment.service.PaymentService;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

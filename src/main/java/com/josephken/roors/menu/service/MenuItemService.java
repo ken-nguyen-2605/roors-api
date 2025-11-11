@@ -7,7 +7,7 @@ import com.josephken.roors.menu.entity.Category;
 import com.josephken.roors.menu.entity.MenuItem;
 import com.josephken.roors.menu.repository.CategoryRepository;
 import com.josephken.roors.menu.repository.MenuItemRepository;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

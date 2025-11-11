@@ -2,7 +2,7 @@ package com.josephken.roors.common.exception;
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.josephken.roors.auth.dto.ErrorResponse;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;

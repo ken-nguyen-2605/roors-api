@@ -10,7 +10,7 @@ import com.josephken.roors.auth.exception.EmailNotVerifiedException;
 import com.josephken.roors.auth.exception.InvalidTokenException;
 import com.josephken.roors.auth.exception.UserAlreadyExistsException;
 import com.josephken.roors.auth.repository.UserRepository;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;

@@ -1,4 +1,4 @@
-package com.josephken.roors.util;
+package com.josephken.roors.common.util;
 
 public class LogCategory {
     // Main category prefixes for Restaurant System

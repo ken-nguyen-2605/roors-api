@@ -4,7 +4,7 @@ import com.josephken.roors.menu.dto.CategoryRequest;
 import com.josephken.roors.menu.dto.CategoryResponse;
 import com.josephken.roors.menu.entity.Category;
 import com.josephken.roors.menu.repository.CategoryRepository;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

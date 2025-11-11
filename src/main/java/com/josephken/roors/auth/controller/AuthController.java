@@ -3,7 +3,7 @@ package com.josephken.roors.auth.controller;
 import com.josephken.roors.auth.dto.*;
 import com.josephken.roors.auth.exception.*;
 import com.josephken.roors.auth.service.AuthService;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

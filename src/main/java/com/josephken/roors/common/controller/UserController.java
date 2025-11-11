@@ -1,4 +1,4 @@
-package com.josephken.roors.controller;
+package com.josephken.roors.common.controller;
 
 import com.josephken.roors.auth.dto.ErrorResponse;
 import com.josephken.roors.auth.dto.UpdateUserRequest;
@@ -7,7 +7,7 @@ import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.exception.UserNotFoundException;
 import com.josephken.roors.auth.repository.UserRepository;
 import com.josephken.roors.auth.util.AuthenticationHelper;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

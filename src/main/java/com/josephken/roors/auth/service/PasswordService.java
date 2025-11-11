@@ -5,7 +5,7 @@ import com.josephken.roors.auth.exception.EmailNotFoundException;
 import com.josephken.roors.auth.exception.InvalidTokenException;
 import com.josephken.roors.auth.exception.UserNotFoundException;
 import com.josephken.roors.auth.repository.UserRepository;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

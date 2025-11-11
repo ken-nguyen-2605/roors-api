@@ -2,7 +2,7 @@ package com.josephken.roors.admin.controller;
 
 import com.josephken.roors.admin.dto.LogResponse;
 import com.josephken.roors.admin.service.LogService;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

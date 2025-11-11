@@ -15,7 +15,7 @@ import com.josephken.roors.reservation.mapper.DiningTableMapper;
 import com.josephken.roors.reservation.mapper.ReservationMapper;
 import com.josephken.roors.reservation.repository.DiningTableRepository;
 import com.josephken.roors.reservation.repository.ReservationRepository;
-import com.josephken.roors.util.LogCategory;
+import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
