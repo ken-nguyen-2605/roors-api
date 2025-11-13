@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,12 +39,25 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(authService.login(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword()
-                ));
+        try {
+            LoginResponse response = authService.login(
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword()
+            );
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(response);
+        } catch (BadCredentialsException e) {
+            log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), loginRequest.getUsername());
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+        } catch (DisabledException e) {
+            log.warn(LogCategory.user("Login failed - Email not verified for username: {}"), loginRequest.getUsername());
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse("Email not verified", HttpStatus.FORBIDDEN.value()));
+        }
     }
 
     /* Change password required the user to be authenticated,
