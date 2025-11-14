@@ -1,3 +1,5 @@
+//them raing
+
 package com.josephken.roors.order.entity;
 
 import com.josephken.roors.auth.entity.User;
@@ -98,6 +100,23 @@ public class Order {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // NEW: Rating fields
+    @Column(name = "rating")
+    private Integer rating; // 1-5 stars
+
+    @Column(name = "feedback", columnDefinition = "TEXT")
+    private String feedback;
+
+    @Column(name = "rated_at")
+    private LocalDateTime ratedAt;
+
+    @Column(name = "admin_response", columnDefinition = "TEXT")
+    private String adminResponse;
+
+    @Column(name = "responded_at")
+    private LocalDateTime respondedAt;
+
 
     @PrePersist
     protected void onCreate() {

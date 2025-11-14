@@ -20,11 +20,30 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     
     Optional<Order> findByOrderNumber(String orderNumber);
     
+    Page<Order> findByStatus(OrderStatus status, Pageable pageable);
+
+    Page<Order> findByCustomerNameContainingOrOrderNumberContaining(
+            String customerName, 
+            String orderNumber, 
+            Pageable pageable
+    );
+
     Page<Order> findByUser(User user, Pageable pageable);
     
     Page<Order> findByUserAndStatus(User user, OrderStatus status, Pageable pageable);
     
     List<Order> findByUserOrderByCreatedAtDesc(User user);
+
+    Page<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end, Pageable pageable);
+    
+    // NEW: Find orders with ratings
+    Page<Order> findByRatingIsNotNull(Pageable pageable);
+    
+    // NEW: Find orders with ratings by status
+    Page<Order> findByRatingIsNotNullAndStatus(OrderStatus status, Pageable pageable);
+    
+    // NEW: Find orders with specific rating
+    Page<Order> findByRating(Integer rating, Pageable pageable);
     
     @Query("SELECT o FROM Order o WHERE o.user = :user AND " +
            "o.createdAt BETWEEN :startDate AND :endDate " +
@@ -56,4 +75,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = :status")
     BigDecimal sumTotalAmountByStatus(@Param("status") OrderStatus status);
+    
+    // NEW: Average rating query
+    @Query("SELECT AVG(o.rating) FROM Order o WHERE o.rating IS NOT NULL")
+    Double getAverageRating();
 }

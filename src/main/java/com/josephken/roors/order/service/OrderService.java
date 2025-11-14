@@ -23,8 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Collections;
+import jakarta.persistence.EntityNotFoundException;
+
 
 @Service
 @Slf4j
@@ -128,8 +133,12 @@ public class OrderService {
             orders = orderRepository.findByUserAndStatus(user, status, pageable);
         } else {
             orders = orderRepository.findByUser(user, pageable);
+            log.info(LogCategory.order("User's id {}" + user.getId()));
         }
 
+        log.info(LogCategory.order("Fetched " + orders.getTotalElements() + " orders for user: " + user.getEmail()));
+            
+        
         return orders.map(order -> {
             try {
                 PaymentResponse payment = paymentService.getPaymentByOrder(order);
@@ -247,7 +256,7 @@ public class OrderService {
 
         if (order.getStatus() == OrderStatus.PREPARING || 
             order.getStatus() == OrderStatus.READY ||
-            order.getStatus() == OrderStatus.OUT_FOR_DELIVERY) {
+            order.getStatus() == OrderStatus.DELIVERING) {
             throw new RuntimeException("Order is already being prepared and cannot be cancelled");
         }
 
@@ -260,6 +269,273 @@ public class OrderService {
 
         return mapToResponse(cancelledOrder, null);
     }
+
+    public Page<OrderResponse> getOrdersByDate(LocalDate date, int page, int size, OrderStatus status) {
+        // Create Pageable object (Sort by newest first)
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        // Calculate Start of Day (e.g., 2025-11-13 00:00:00)
+        LocalDateTime startOfDay = date.atStartOfDay();
+
+        // Calculate End of Day (e.g., 2025-11-13 23:59:59.999999)
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        Page<Order> orders;
+
+        // Check if Status is provided or null
+        // if (status != null) {
+        //     // Filter by Date Range AND Status
+        //     //orders = orderRepository.findByCreatedAtBetweenAndStatus(startOfDay, endOfDay, status, pageable);
+        // } else {
+        //     // Filter by Date Range ONLY
+        //     orders = orderRepository.findByCreatedAtBetween(startOfDay, endOfDay, pageable);
+        // }
+        
+        orders = orderRepository.findByCreatedAtBetween(startOfDay, endOfDay, pageable);
+
+        // Convert Entity to DTO
+        return orders.map(this::convertToResponse); 
+    }
+
+
+    // ==========================================
+    // MANUAL MAPPERS
+    // ==========================================
+
+    private OrderResponse convertToResponse(Order order) {
+        OrderResponse response = new OrderResponse();
+        
+        // 1. Basic Fields
+        response.setId(order.getId());
+        response.setOrderNumber(order.getOrderNumber());
+        response.setStatus(order.getStatus());
+        response.setOrderType(order.getOrderType());
+        response.setSubtotal(order.getSubtotal());
+        response.setTaxAmount(order.getTaxAmount());
+        response.setDeliveryFee(order.getDeliveryFee());
+        response.setDiscountAmount(order.getDiscountAmount());
+        response.setTotalAmount(order.getTotalAmount());
+        
+        // 2. Customer Info
+        response.setCustomerName(order.getCustomerName());
+        response.setCustomerPhone(order.getCustomerPhone());
+        response.setCustomerEmail(order.getCustomerEmail());
+        response.setDeliveryAddress(order.getDeliveryAddress());
+        
+        // 3. Details
+        response.setSpecialInstructions(order.getSpecialInstructions());
+        response.setTableNumber(order.getTableNumber());
+        response.setEstimatedPreparationTime(order.getEstimatedPreparationTime());
+        
+        // 4. Timestamps
+        response.setPreparationStartedAt(order.getPreparationStartedAt());
+        response.setReadyAt(order.getReadyAt());
+        response.setCompletedAt(order.getCompletedAt());
+        response.setCancelledAt(order.getCancelledAt());
+        response.setCancellationReason(order.getCancellationReason());
+        response.setCreatedAt(order.getCreatedAt());
+        response.setUpdatedAt(order.getUpdatedAt());
+
+        // NEW: Rating fields
+        response.setRating(order.getRating());
+        response.setFeedback(order.getFeedback());
+        response.setRatedAt(order.getRatedAt());
+        response.setAdminResponse(order.getAdminResponse());
+        response.setRespondedAt(order.getRespondedAt());
+        
+        response.setCreatedAt(order.getCreatedAt());
+        response.setUpdatedAt(order.getUpdatedAt());    
+
+        // 5. Map Items List (Check for null to avoid errors)
+        if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
+            List<OrderItemResponse> itemResponses = order.getOrderItems().stream()
+                    .map(this::convertToItemResponse) // Helper method below
+                    .collect(Collectors.toList());
+            response.setItems(itemResponses);
+        } else {
+            response.setItems(Collections.emptyList());
+        }
+
+        // 6. Payment (Optional: Add logic if you have a Payment entity relation)
+        // response.setPayment(convertPayment(order.getPayment())); 
+
+        return response;
+    }
+
+    private OrderItemResponse convertToItemResponse(OrderItem item) {
+        // Ensure you have a similar DTO structure for OrderItemResponse
+        OrderItemResponse itemResponse = new OrderItemResponse();
+        itemResponse.setId(item.getId());
+        itemResponse.setMenuItemName(item.getMenuItemName());
+        itemResponse.setQuantity(item.getQuantity());
+        itemResponse.setUnitPrice(item.getUnitPrice());
+        itemResponse.setSubtotal(item.getSubtotal());
+        itemResponse.setSpecialInstructions(item.getSpecialInstructions());
+
+         // NEW: Dish rating fields
+        itemResponse.setDishRating(item.getDishRating());
+        itemResponse.setDishFeedback(item.getDishFeedback());
+        itemResponse.setDishRatedAt(item.getDishRatedAt());
+        itemResponse.setAdminDishResponse(item.getAdminDishResponse());
+        itemResponse.setDishRespondedAt(item.getDishRespondedAt());
+        return itemResponse;
+    }
+
+    /**
+     * List orders with filters and pagination
+     */
+    public Page<OrderResponse> listOrders(OrderStatus status, String search, Pageable pageable) {
+        Page<Order> orders;
+        
+       if (status != null) {
+            orders = orderRepository.findByStatus(status, pageable);
+        } else if (search != null && !search.isEmpty()) {
+            orders = orderRepository.findByCustomerNameContainingOrOrderNumberContaining(search, search, pageable);
+        } else {
+            orders = orderRepository.findAll(pageable);
+        }
+        
+        return orders.map(this::convertToResponse);
+    }
+
+    /**
+     * Get orders by specific status (NEW METHOD)
+     */
+    public Page<OrderResponse> getOrdersByStatus(OrderStatus status, Pageable pageable) {
+        Page<Order> orders;
+        
+        
+        orders = orderRepository.findByStatus(status, pageable);
+        
+        
+        return orders.map(this::convertToResponse);
+    }
+
+    public Order updateOrderStatus(Long orderId, OrderStatus newStatus) {
+        // 1. Find the order or throw an error if not found
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
+
+        // 2. Update the status
+        // Note: If you use an Enum for status, convert string to Enum here
+        order.setStatus(newStatus);
+
+        // 3. Save and return the updated order
+        return orderRepository.save(order);
+    }
+
+    // NEW: Get orders with ratings
+    @Transactional(readOnly = true)
+    public Page<OrderResponse> getOrdersWithRatings(Integer rating, Pageable pageable) {
+        log.info(LogCategory.order("Fetching orders with ratings"));
+        
+        Page<Order> orders;
+        if (rating != null) {
+            orders = orderRepository.findByRating(rating, pageable);
+        } else {
+            orders = orderRepository.findByRatingIsNotNull(pageable);
+        }
+        
+        return orders.map(this::convertToResponse);
+    }
+
+    // NEW: Submit order rating
+    @Transactional
+    public OrderResponse submitOrderRating(User user, Long orderId, SubmitOrderRatingRequest request) {
+        log.info(LogCategory.order("Submitting rating for order: " + orderId));
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized access to order");
+        }
+        
+        if (order.getStatus() != OrderStatus.COMPLETED) {
+            throw new RuntimeException("Can only rate completed orders");
+        }
+        
+        order.setRating(request.getRating());
+        order.setFeedback(request.getFeedback());
+        order.setRatedAt(LocalDateTime.now());
+        
+        Order savedOrder = orderRepository.save(order);
+        return convertToResponse(savedOrder);
+    }
+
+    // NEW: Submit dish rating
+    @Transactional
+    public OrderResponse submitDishRating(User user, Long orderId, Long itemId, SubmitDishRatingRequest request) {
+        log.info(LogCategory.order("Submitting dish rating for order: " + orderId + ", item: " + itemId));
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        if (!order.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("Unauthorized access to order");
+        }
+        
+        if (order.getStatus() != OrderStatus.COMPLETED) {
+            throw new RuntimeException("Can only rate completed orders");
+        }
+        
+        OrderItem item = order.getOrderItems().stream()
+                .filter(oi -> oi.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Order item not found: " + itemId));
+        
+        item.setDishRating(request.getDishRating());
+        item.setDishFeedback(request.getDishFeedback());
+        item.setDishRatedAt(LocalDateTime.now());
+        
+        Order savedOrder = orderRepository.save(order);
+        return convertToResponse(savedOrder);
+    }
+
+    // NEW: Admin respond to order feedback
+    @Transactional
+    public OrderResponse respondToOrderFeedback(Long orderId, AdminResponseRequest request) {
+        log.info(LogCategory.order("Admin responding to order feedback: " + orderId));
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        if (order.getRating() == null) {
+            throw new RuntimeException("No feedback to respond to");
+        }
+        
+        order.setAdminResponse(request.getResponse());
+        order.setRespondedAt(LocalDateTime.now());
+        
+        Order savedOrder = orderRepository.save(order);
+        return convertToResponse(savedOrder);
+    }
+
+    // NEW: Admin respond to dish feedback
+    @Transactional
+    public OrderResponse respondToDishFeedback(Long orderId, Long itemId, AdminResponseRequest request) {
+        log.info(LogCategory.order("Admin responding to dish feedback: " + orderId + ", item: " + itemId));
+        
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+        
+        OrderItem item = order.getOrderItems().stream()
+                .filter(oi -> oi.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Order item not found: " + itemId));
+        
+        if (item.getDishRating() == null) {
+            throw new RuntimeException("No feedback to respond to");
+        }
+        
+        item.setAdminDishResponse(request.getResponse());
+        item.setDishRespondedAt(LocalDateTime.now());
+        
+        Order savedOrder = orderRepository.save(order);
+        return convertToResponse(savedOrder);
+    }
+
+
 
     @Transactional
     public OrderResponse reorder(User user, Long orderId) {
@@ -304,7 +580,13 @@ public class OrderService {
                         item.getUnitPrice(),
                         item.getQuantity(),
                         item.getSubtotal(),
-                        item.getSpecialInstructions()
+                        item.getSpecialInstructions(),
+
+                        item.getDishRating(),
+                        item.getDishFeedback(),
+                        item.getDishRatedAt(),
+                        item.getAdminDishResponse(),
+                        item.getDishRespondedAt()
                 ))
                 .collect(Collectors.toList());
 
@@ -352,6 +634,11 @@ public class OrderService {
                 order.getCompletedAt(),
                 order.getCancelledAt(),
                 order.getCancellationReason(),
+                order.getRating(),
+                order.getFeedback(),
+                order.getRatedAt(),
+                order.getAdminResponse(),
+                order.getRespondedAt(),
                 paymentResponse,
                 order.getCreatedAt(),
                 order.getUpdatedAt()
@@ -367,7 +654,13 @@ public class OrderService {
                         item.getUnitPrice(),
                         item.getQuantity(),
                         item.getSubtotal(),
-                        item.getSpecialInstructions()
+                        item.getSpecialInstructions(),
+
+                        item.getDishRating(),
+                        item.getDishFeedback(),
+                        item.getDishRatedAt(),
+                        item.getAdminDishResponse(),
+                        item.getDishRespondedAt()
                 ))
                 .collect(Collectors.toList());
 
@@ -394,6 +687,11 @@ public class OrderService {
                 order.getCompletedAt(),
                 order.getCancelledAt(),
                 order.getCancellationReason(),
+                order.getRating(),
+                order.getFeedback(),
+                order.getRatedAt(),
+                order.getAdminResponse(),
+                order.getRespondedAt(),
                 paymentResponse,
                 order.getCreatedAt(),
                 order.getUpdatedAt()

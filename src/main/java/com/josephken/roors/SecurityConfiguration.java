@@ -49,14 +49,20 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
+                        .requestMatchers("/api/reservations/**").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/categories/**", "/api/menu/**").permitAll()
                         .requestMatchers("/api/payments/methods").permitAll()
+                        .requestMatchers("/api/orders/**", "/api/payments/**").permitAll()
                         .requestMatchers("/api/orders/**", "/api/payments/**").authenticated()
+
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/admin/**").authenticated()  // Admin endpoints require authentication
                         .requestMatchers("/api/reservations/availability",
                                 "/api/reservations/date-time-availability").permitAll()
+                        .requestMatchers("/api/reservations").permitAll()
+                        .requestMatchers("/api/reservations").authenticated()
                         .requestMatchers("/api/reservations/**").authenticated()
                         .requestMatchers("/api/tables/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()

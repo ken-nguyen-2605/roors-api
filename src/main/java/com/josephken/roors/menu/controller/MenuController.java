@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/menu")
 @RequiredArgsConstructor
@@ -24,9 +28,11 @@ public class MenuController {
     @GetMapping
     public ResponseEntity<Page<MenuItemResponse>> getAllMenuItems(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
+            @RequestParam(defaultValue = "desc") String sortDir) {
+        
+        log.info("size: " + size);
         return ResponseEntity.ok(menuItemService.getAllMenuItems(page, size, sortBy, sortDir));
     }
 
@@ -50,7 +56,7 @@ public class MenuController {
 
     @GetMapping("/search")
     public ResponseEntity<Page<MenuItemResponse>> searchMenuItems(
-            @RequestParam String keyword,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(menuItemService.searchMenuItems(keyword, page, size));

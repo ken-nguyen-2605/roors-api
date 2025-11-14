@@ -48,6 +48,22 @@ public class OrderItem {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+     // NEW: Dish-specific rating
+    @Column(name = "dish_rating")
+    private Integer dishRating; // 1-5 stars
+
+    @Column(name = "dish_feedback", columnDefinition = "TEXT")
+    private String dishFeedback;
+
+    @Column(name = "dish_rated_at")
+    private LocalDateTime dishRatedAt;
+
+    @Column(name = "admin_dish_response", columnDefinition = "TEXT")
+    private String adminDishResponse;
+
+    @Column(name = "dish_responded_at")
+    private LocalDateTime dishRespondedAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

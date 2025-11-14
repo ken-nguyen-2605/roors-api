@@ -43,7 +43,7 @@ public class ReservationController {
                 .body(reservationTableService.getAvailableReservationTimes());
     }
 
-    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
+    //@PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
     @GetMapping
     public ResponseEntity<List<ReservationDto>> getAllReservations() {
         return ResponseEntity
@@ -73,7 +73,7 @@ public class ReservationController {
                 .body(reservationTableService.updateReservation(user.getId(), id, updateReservationDto));
     }
 
-    @PreAuthorize("hasRole('STAFF')")
+    //@PreAuthorize("hasRole('STAFF')")
     @PatchMapping("/{id}/mark-arrived")
     public ResponseEntity<ReservationDto> markReservationAsArrived(@PathVariable Long id) {
         return ResponseEntity
