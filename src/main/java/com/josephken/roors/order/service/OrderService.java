@@ -20,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.josephken.roors.auth.service.EmailService;
+
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -39,6 +41,9 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final MenuItemRepository menuItemRepository;
     private final PaymentService paymentService;
+    private final EmailService emailService;
+
+
 
     @Transactional
     public OrderResponse createOrder(User user, CreateOrderRequest request) {
@@ -87,7 +92,7 @@ public class OrderService {
         
         // Delivery fee (if delivery type)
         if (request.getOrderType().name().equals("DELIVERY")) {
-            order.setDeliveryFee(BigDecimal.valueOf(20000)); // 20,000 VND
+            order.setDeliveryFee(BigDecimal.valueOf(5)); // 20,000 VND
         } else {
             order.setDeliveryFee(BigDecimal.ZERO);
         }
@@ -115,6 +120,8 @@ public class OrderService {
 
         // Create payment
         Payment payment = paymentService.createPayment(savedOrder, request.getPaymentMethod());
+        
+        emailService.sendEmailOrderConfirmation(user, savedOrder);
 
         log.info(LogCategory.order("Order created successfully: " + savedOrder.getOrderNumber()));
 

@@ -19,6 +19,7 @@ import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.josephken.roors.auth.service.EmailService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class ReservationTableServiceImpl implements ReservationTableService {
     private final ReservationRepository reservationRepository;
     private final DiningTableRepository diningTableRepository;
     private final UserService userService;
+    private final EmailService emailService;
 
     private static final LocalTime OPENING_TIME = LocalTime.of(10, 0);
     private static final LocalTime LAST_RESERVATION_TIME = LocalTime.of(20, 0);
@@ -183,6 +185,8 @@ public class ReservationTableServiceImpl implements ReservationTableService {
                 .build();
 
         Reservation savedReservation = reservationRepository.save(reservation);
+
+        emailService.sendEmailReservationConfirmation(user, reservation);
 
         log.info(LogCategory.reservation("Reservation with id: {} created successfully for user with id: {}"),
                 reservation.getId(), userId);

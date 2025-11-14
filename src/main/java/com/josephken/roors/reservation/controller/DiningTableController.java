@@ -30,7 +30,7 @@ public class DiningTableController {
     @GetMapping("/availability")
     public ResponseEntity<List<DiningTableDto>> getAvailableDiningTables(
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
-            @RequestParam @DateTimeFormat(pattern = "HH:mm:SS") LocalTime time,
+            @RequestParam @DateTimeFormat(pattern = "HH:mm:ss") LocalTime time,
             @RequestParam int numberOfGuests
     ) {
         return ResponseEntity
