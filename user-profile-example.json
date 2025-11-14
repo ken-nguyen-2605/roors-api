@@ -1,0 +1,25 @@
+{
+  "id": 1,
+  "username": "testuser",
+  "email": "test@example.com",
+  "verified": true,
+  "fullname": "John Doe",
+  "contact_number": "+1234567890",
+  "profile_image": "https://example.com/profile.jpg",
+  "address": "123 Main St, City, Country",
+  "member_since": "2025-11-14T06:03:00",
+  "liked_dishes": [
+    {
+      "id": 1,
+      "name": "Delicious Pasta",
+      "imageUrl": "https://example.com/pasta.jpg",
+      "price": 15.99
+    },
+    {
+      "id": 2,
+      "name": "Grilled Chicken",
+      "imageUrl": "https://example.com/chicken.jpg",
+      "price": 18.50
+    }
+  ]
+}
