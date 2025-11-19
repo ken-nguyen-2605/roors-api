@@ -1,5 +1,6 @@
-package com.josephken.roors.auth;
+package com.josephken.roors.auth.security;
 
+import com.josephken.roors.auth.util.JwtUtil;
 import com.josephken.roors.auth.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,12 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
@@ -21,18 +24,24 @@ import java.io.IOException;
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     public static final String BEARER_ = "Bearer ";
+
     @Autowired
     private JwtUtil jwtUtil;
+
     @Autowired
     private UserService userService;
+
+    @Autowired
+    @Qualifier("handlerExceptionResolver")
+    private HandlerExceptionResolver resolver;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtil.validateToken(jwt)) {
-                final String username = jwtUtil.getUsernameFromToken(jwt);
-                final UserDetails userDetails = userService.loadUserByUsername(username);
+                String username = jwtUtil.getUsernameFromToken(jwt);
+                UserDetails userDetails = userService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authenticationToken =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities()
@@ -40,11 +49,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
-        } catch (Exception e) {
-            log.error("Cannot set user authentication: {}", e);
+            filterChain.doFilter(request, response);
 
+        } catch (Exception ex) {
+            resolver.resolveException(request, response, null, ex);
         }
-        filterChain.doFilter(request, response);
     }
 
     private String parseJwt(HttpServletRequest request) {

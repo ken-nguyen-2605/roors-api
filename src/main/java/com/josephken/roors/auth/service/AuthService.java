@@ -1,6 +1,7 @@
 package com.josephken.roors.auth.service;
 
-import com.josephken.roors.auth.JwtUtil;
+import com.josephken.roors.auth.entity.UserRole;
+import com.josephken.roors.auth.util.JwtUtil;
 import com.josephken.roors.auth.dto.LoginResponse;
 import com.josephken.roors.auth.dto.MessageResponse;
 import com.josephken.roors.auth.dto.RegisterResponse;
@@ -67,6 +68,7 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setUsername(username);
         newUser.setPassword(passwordEncoder.encode(password));
+        newUser.setRole(UserRole.CUSTOMER);
         newUser.setVerified(false);
         newUser.setVerifyToken(verifyToken);
         newUser.setVerifyTokenExpiry(LocalDateTime.now().plusHours(24));
@@ -91,7 +93,7 @@ public class AuthService {
         );
 
         User user = (User) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user);
 
         if (!user.isVerified()) {
             throw new EmailNotVerifiedException("Email not verified for user: " + username);

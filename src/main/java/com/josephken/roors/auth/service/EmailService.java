@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.order.entity.Order;
@@ -25,6 +26,7 @@ public class EmailService {
     @Value("${app.base-url:http://localhost:3000}")
     private String baseUrl;
 
+    @Async
     public void sendVerificationEmail(String toEmail, String verificationToken) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -55,6 +57,7 @@ public class EmailService {
         }
     }
 
+    @Async
     public void sendPasswordResetEmail(String toEmail, String resetToken) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -87,10 +90,8 @@ public class EmailService {
         }
     }
 
-        public void sendEmailReservationConfirmation(
-            User user,
-            Reservation reservation
-    ) {
+    @Async
+    public void sendEmailReservationConfirmation(User user, Reservation reservation) {
         String toEmail = user.getEmail();
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -121,6 +122,7 @@ public class EmailService {
         }
     }
 
+    @Async
     public void sendEmailOrderConfirmation(User user, Order order) {
         String toEmail = user.getEmail();
         try {

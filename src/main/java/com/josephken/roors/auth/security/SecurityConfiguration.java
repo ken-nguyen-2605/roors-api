@@ -1,4 +1,4 @@
-package com.josephken.roors.auth;
+package com.josephken.roors.auth.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,13 +11,25 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
+    @Bean
+    public AuthenticationEntryPoint authenticationEntryPoint() {
+        return new CustomAuthenticationEntryPoint();
+    }
+
+    @Bean
+    public AccessDeniedHandler accessDeniedHandler() {
+        return new CustomAccessDeniedHandler();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -42,6 +54,9 @@ public class SecurityConfiguration {
                 .cors(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint())
+                        .accessDeniedHandler(accessDeniedHandler()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login",
                                         "/api/auth/forgot-password", "/api/auth/reset-password",
@@ -49,7 +64,6 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
-                        .requestMatchers("/api/reservations/**").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/categories/**", "/api/menu/**").permitAll()
                         .requestMatchers("/api/payments/methods").permitAll()
@@ -60,13 +74,12 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/admin/**").permitAll()
                         .requestMatchers("/api/admin/**").authenticated()  // Admin endpoints require authentication
                         .requestMatchers("/api/reservations/availability",
-                                "/api/reservations/date-time-availability").permitAll()
-                        .requestMatchers("/api/reservations").permitAll()
-                        .requestMatchers("/api/reservations").authenticated()
+                                         "/api/reservations/date-time-availability").permitAll()
                         .requestMatchers("/api/reservations/**").authenticated()
                         .requestMatchers("/api/tables/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated());
+
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

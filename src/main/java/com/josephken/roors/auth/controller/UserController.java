@@ -1,4 +1,4 @@
-package com.josephken.roors.common.controller;
+package com.josephken.roors.auth.controller;
 
 import com.josephken.roors.auth.dto.ErrorResponse;
 import com.josephken.roors.auth.dto.UpdateUserRequest;

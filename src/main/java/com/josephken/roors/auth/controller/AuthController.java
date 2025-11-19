@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,12 +111,37 @@ public class AuthController {
                 .body(authService.verifyEmail(token));
     }
 
+    /**
+     * Handler Spring Security BadCredentialsException
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
         log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    /**
+     * Handler Spring Security UsernameNotFoundException
+     */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        log.warn(LogCategory.user("Login failed - User not found: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    /**
+     * Handler Spring Security DisabledException
+     */
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabledException(DisabledException ex) {
+        log.warn(LogCategory.user("Login failed - User account is not verified: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("User account is not verified", HttpStatus.FORBIDDEN.value()));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

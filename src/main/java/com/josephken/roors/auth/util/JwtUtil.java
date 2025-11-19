@@ -1,5 +1,6 @@
-package com.josephken.roors.auth;
+package com.josephken.roors.auth.util;
 
+import com.josephken.roors.auth.entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -26,9 +27,10 @@ public class JwtUtil {
         this.secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username) {
+    public String generateToken(User user) {
         return Jwts.builder()
-                .subject(username)
+                .subject(user.getId().toString())
+                .claim("role", user.getRole())
                 .issuedAt(new Date())
                 .expiration(new Date(new Date().getTime() + jwtExpirationMs))
                 .signWith(secretKey)
@@ -43,12 +45,7 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token) {
-        try {
-            Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
-            return true;
-        } catch (Exception e) {
-            log.error("JWT validation error: {}", e.getMessage());
-        }
-        return false;
+        Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token);
+        return true;
     }
 }
