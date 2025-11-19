@@ -9,8 +9,6 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-import java.io.IOException;
-
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
