@@ -21,6 +21,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) {
 
+        // Forward Primary Authorization to global exception handler
         resolver.resolveException(request, response, null, accessDeniedException);
     }
 }

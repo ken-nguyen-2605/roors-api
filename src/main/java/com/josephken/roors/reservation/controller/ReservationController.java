@@ -29,11 +29,11 @@ public class ReservationController {
 
     @GetMapping("/me")
     public ResponseEntity<List<ReservationDto>> getMyReservations(
-            @AuthenticationPrincipal User user
+            @AuthenticationPrincipal Long userId
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(reservationTableService.getReservationsByUserId(user.getId()));
+                .body(reservationTableService.getReservationsByUserId(userId));
     }
 
     @GetMapping("/date-time-availability")
@@ -43,7 +43,7 @@ public class ReservationController {
                 .body(reservationTableService.getAvailableReservationTimes());
     }
 
-    //@PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
+    @PreAuthorize("hasAnyRole('MANAGER', 'STAFF')")
     @GetMapping
     public ResponseEntity<List<ReservationDto>> getAllReservations() {
         return ResponseEntity

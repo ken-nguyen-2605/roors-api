@@ -22,6 +22,15 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                          HttpServletResponse response,
                          AuthenticationException authenticationException) {
 
-        handlerExceptionResolver.resolveException(request, response, null, authenticationException);
+        var authException = request.getAttribute("authException");
+        if (authException != null) {
+            // Forward JWT exceptions to global exception handler
+            handlerExceptionResolver.resolveException(request, response, null, (Exception) authException);
+
+        } else {
+            // Forward Authentication exceptions to global exception handler
+            handlerExceptionResolver.resolveException(request, response, null, authenticationException);
+        }
+
     }
 }

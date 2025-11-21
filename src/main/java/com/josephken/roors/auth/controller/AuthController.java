@@ -48,6 +48,13 @@ public class AuthController {
                 ));
     }
 
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.refreshToken(request.getRefreshToken()));
+    }
+
     /* Change password required the user to be authenticated,
        so maybe better handled in UserController
     */
@@ -196,13 +203,5 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse(errorMessage, HttpStatus.BAD_REQUEST.value()));
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        log.error(LogCategory.error("General error - {}"), ex.getMessage(), ex);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("An internal server error occurred", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.josephken.roors.auth.dto.ErrorResponse;
 import com.josephken.roors.common.util.LogCategory;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
@@ -35,15 +36,19 @@ public class GlobalExceptionHandler {
     /**
      * Handle JWT exceptions (for protected endpoints) -> 401 Unauthorized
      */
-    @ExceptionHandler({ExpiredJwtException.class, SignatureException.class})
+    @ExceptionHandler({
+            ExpiredJwtException.class,
+            SignatureException.class,
+            MalformedJwtException.class
+    })
     public ResponseEntity<ErrorResponse> handleJwtExceptions(Exception ex) {
-        String message;
+        String message = "JWT token error";
         if (ex instanceof ExpiredJwtException) {
             message = "JWT token has expired";
         } else if (ex instanceof SignatureException) {
             message = "Invalid JWT signature";
-        } else {
-            message = "JWT error";
+        } else if (ex instanceof MalformedJwtException) {
+            message = "Malformed JWT token";
         }
 
         ErrorResponse errorResponse = new ErrorResponse(message, HttpStatus.UNAUTHORIZED.value());
@@ -90,7 +95,9 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
-        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN.value());
+        ErrorResponse errorResponse = new ErrorResponse(
+                "You do not have permission to access this resource",
+                HttpStatus.FORBIDDEN.value());
 
         log.warn(LogCategory.error("Handling AccessDeniedException: {}"), ex.getMessage());
         return ResponseEntity
@@ -253,7 +260,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
-        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
 
         log.warn(LogCategory.error("Handling BusinessException: {}"), ex.getMessage());
         return ResponseEntity

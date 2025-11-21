@@ -6,11 +6,15 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -37,11 +41,27 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String getUsernameFromToken(String token) {
-        return Jwts.parser().verifyWith(secretKey).build()
+//    public String getUsernameFromToken(String token) {
+//        return Jwts.parser().verifyWith(secretKey).build()
+//                .parseSignedClaims(token)
+//                .getPayload()
+//                .getSubject();
+//    }
+
+    public Long getUserIdFromToken(String token) {
+        String userIdStr = Jwts.parser().verifyWith(secretKey).build()
                 .parseSignedClaims(token)
                 .getPayload()
                 .getSubject();
+        return Long.parseLong(userIdStr);
+    }
+
+    public Collection<GrantedAuthority> getAuthoritiesFromToken(String token) {
+        String role = Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("role", String.class);
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     public boolean validateToken(String token) {
