@@ -53,10 +53,10 @@ public class ReservationController {
 
     @PostMapping
     public ResponseEntity<ReservationDto> createReservation(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody CreateReservationDto createReservationDto
     ) {
-        ReservationDto createdReservation = reservationTableService.createReservation(user.getId(), createReservationDto);
+        ReservationDto createdReservation = reservationTableService.createReservation(userId, createReservationDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(createdReservation);
@@ -64,16 +64,16 @@ public class ReservationController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<ReservationDto> updateReservation(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long id,
             @Valid @RequestBody UpdateReservationDto updateReservationDto
     ) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(reservationTableService.updateReservation(user.getId(), id, updateReservationDto));
+                .body(reservationTableService.updateReservation(userId, id, updateReservationDto));
     }
 
-    //@PreAuthorize("hasRole('STAFF')")
+    @PreAuthorize("hasRole('STAFF')")
     @PatchMapping("/{id}/mark-arrived")
     public ResponseEntity<ReservationDto> markReservationAsArrived(@PathVariable Long id) {
         return ResponseEntity
@@ -83,11 +83,11 @@ public class ReservationController {
 
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<ReservationDto> cancelReservation(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(reservationTableService.cancelReservation(user.getId(), id));
+                .body(reservationTableService.cancelReservation(userId, id));
     }
 
     /**

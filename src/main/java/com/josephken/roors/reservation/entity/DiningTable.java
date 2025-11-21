@@ -24,6 +24,7 @@ public class DiningTable {
     @Column(nullable = false)
     private int capacity;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DiningTableStatus status;
 }
