@@ -472,10 +472,10 @@ public class ReservationTableServiceImpl implements ReservationTableService {
                 reservationEnd.toLocalTime().isAfter(LAST_RESERVATION_TIME);
     }
 
-    private boolean satisfiesThirtyMinutesRule(LocalDateTime reservationStart) {
-        LocalDateTime now = LocalDateTime.now();
-        return reservationStart.isAfter(now.plusMinutes(30));
-    }
+    // private boolean satisfiesThirtyMinutesRule(LocalDateTime reservationStart) {
+    //     LocalDateTime now = LocalDateTime.now();
+    //     return reservationStart.isAfter(now.plusMinutes(30));
+    // }
 
     private boolean isTableOverlapped(DiningTable diningTable, LocalDateTime startTime, LocalDateTime endTime) {
         return reservationRepository.existsOverlappingReservations(
