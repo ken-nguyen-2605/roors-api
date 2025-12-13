@@ -62,7 +62,7 @@ public class EmailService {
             message.setTo(toEmail);
             message.setSubject("Password Reset Request - Roors API");
             
-            String resetUrl = baseUrl + "/api/auth/reset-password?token=" + resetToken;
+            String resetUrl = baseUrl + "/auth/reset-password?token=" + resetToken;
             
             String emailBody = "Hello,\n\n" +
                     "You have requested to reset your password.\n\n" +

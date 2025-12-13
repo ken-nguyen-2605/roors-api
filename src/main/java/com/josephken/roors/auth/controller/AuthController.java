@@ -178,4 +178,23 @@ public class AuthController {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("An internal server error occurred", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
+
+    @PostMapping("/logout")
+        public ResponseEntity<?> logout(
+                @RequestHeader(value = "Authorization", required = false) String authHeader) {
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                String shortenedToken = token.substring(0, Math.min(8, token.length()));
+                log.info(LogCategory.user("Logout request - token: {}..."), shortenedToken);
+        }
+        
+        // For JWT-based auth, logout is handled client-side by removing the token
+        // If you implement token blacklisting, add that logic here
+        
+        log.info(LogCategory.user("Logout successful"));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new MessageResponse("Logged out successfully"));
+        }
 }

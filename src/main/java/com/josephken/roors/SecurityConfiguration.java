@@ -45,16 +45,19 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login",
                                         "/api/auth/forgot-password", "/api/auth/reset-password",
-                                        "/api/auth/verify-email", "/api/auth/resend-verification").permitAll()
+                                        "/api/auth/verify-email", "/api/auth/resend-verification", "/api/auth/logout" ).permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll()
+                        .requestMatchers("/api/users/**").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/categories/**", "/api/menu/**").permitAll()
                         .requestMatchers("/api/payments/methods").permitAll()
                         .requestMatchers("/api/orders/**", "/api/payments/**").permitAll()
                         .requestMatchers("/api/orders/**", "/api/payments/**").authenticated()
+
+                        
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").permitAll()
