@@ -5,6 +5,7 @@ import com.josephken.roors.auth.dto.LoginResponse;
 import com.josephken.roors.auth.dto.MessageResponse;
 import com.josephken.roors.auth.dto.RegisterResponse;
 import com.josephken.roors.auth.entity.User;
+import com.josephken.roors.auth.entity.UserRole;
 import com.josephken.roors.auth.exception.EmailNotFoundException;
 import com.josephken.roors.auth.exception.EmailNotVerifiedException;
 import com.josephken.roors.auth.exception.InvalidTokenException;
@@ -70,6 +71,7 @@ public class AuthService {
         newUser.setVerified(false);
         newUser.setVerifyToken(verifyToken);
         newUser.setVerifyTokenExpiry(LocalDateTime.now().plusHours(24));
+        newUser.setRole(UserRole.CUSTOMER);
         userRepository.save(newUser);
         log.info(LogCategory.user("Registration successful - username: {}"), username);
 
@@ -92,13 +94,15 @@ public class AuthService {
 
         User user = (User) authentication.getPrincipal();
         String token = jwtUtil.generateToken(user.getUsername());
+        // Guard against legacy rows with null role
+        var role = user.getRole() != null ? user.getRole().name() : UserRole.CUSTOMER.name();
 
         if (!user.isVerified()) {
             throw new EmailNotVerifiedException("Email not verified for user: " + username);
         }
 
         log.info(LogCategory.user("Login successful - username: {}"), username);
-        return new LoginResponse(token);
+        return new LoginResponse(token, user.getUsername(), role);
     }
 
     public MessageResponse forgotPassword(String email) {
