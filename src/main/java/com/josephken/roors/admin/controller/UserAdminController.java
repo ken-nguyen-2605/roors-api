@@ -75,6 +75,7 @@ public class UserAdminController {
                         .email(u.getEmail())
                         .role(u.getRole() != null ? u.getRole() : UserRole.CUSTOMER)
                         .verified(u.isVerified())
+                        .disabled(u.isDisabled())
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(users);
@@ -87,5 +88,23 @@ public class UserAdminController {
         }
         userRepository.deleteById(id);
         return ResponseEntity.ok(new MessageResponse("User deleted successfully"));
+    }
+
+    @PostMapping("/{id}/disable")
+    public ResponseEntity<MessageResponse> disableUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setDisabled(true);
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("User disabled"));
+    }
+
+    @PostMapping("/{id}/enable")
+    public ResponseEntity<MessageResponse> enableUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setDisabled(false);
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("User enabled"));
     }
 }
