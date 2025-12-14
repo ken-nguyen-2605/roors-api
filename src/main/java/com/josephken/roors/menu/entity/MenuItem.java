@@ -37,7 +37,8 @@ public class MenuItem {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "image_url")
+    // Allow full data URLs (base64) or long remote URLs
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     @Column(name = "is_available")
