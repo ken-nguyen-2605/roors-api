@@ -11,7 +11,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import com.josephken.roors.menu.entity.MenuItem;
 
 @Entity
 @Table(name = "users")
@@ -28,6 +31,21 @@ public class User implements UserDetails {
     private String username;
     private String password;
     private String email;
+    
+    @Column(name = "full_name")
+    private String fullName;
+    
+    @Column(name = "contact_number")
+    private String contactNumber;
+    
+    @Column(name = "profile_image")
+    private String profileImage;
+    
+    @Column(columnDefinition = "TEXT")
+    private String address;
+    
+    @Column(name = "member_since", updatable = false)
+    private LocalDateTime memberSince;
 
     @Column(name = "is_verified")
     private boolean isVerified = false;
@@ -46,10 +64,25 @@ public class User implements UserDetails {
     
     @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
+    
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_liked_dishes",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "menu_item_id")
+    )
+    private Set<MenuItem> likedDishes = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role")
     private UserRole role = UserRole.CUSTOMER;
+    
+    @PrePersist
+    protected void onCreate() {
+        if (memberSince == null) {
+            memberSince = LocalDateTime.now();
+        }
+    }
 
     // UserDetails methods
     @Override

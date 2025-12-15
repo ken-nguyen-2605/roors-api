@@ -1,5 +1,7 @@
 package com.josephken.roors.order.entity;
 
 public enum OrderType {
-    DELIVERY
+    DELIVERY,
+    DINE_IN,
+    TAKEAWAY
 }
