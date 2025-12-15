@@ -1,11 +1,13 @@
 package com.josephken.roors.common.controller;
 
 import com.josephken.roors.auth.dto.ErrorResponse;
+import com.josephken.roors.auth.dto.MessageResponse;
 import com.josephken.roors.auth.dto.UpdateUserRequest;
 import com.josephken.roors.auth.dto.UserProfileResponse;
 import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.exception.UserNotFoundException;
 import com.josephken.roors.auth.repository.UserRepository;
+import com.josephken.roors.auth.service.EmailService;
 import com.josephken.roors.auth.util.AuthenticationHelper;
 import com.josephken.roors.common.util.LogCategory;
 import jakarta.validation.Valid;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserProfile(@PathVariable Long id) {
@@ -120,6 +123,46 @@ public class UserController {
             return ResponseEntity
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ErrorResponse("An error occurred while updating user profile", 
+                            HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @PostMapping("/disable")
+    public ResponseEntity<?> disableCurrentUser() {
+        log.info(LogCategory.user("Disable current user account request"));
+
+        try {
+            User currentUser = AuthenticationHelper.getCurrentUser()
+                    .orElseThrow(() -> new RuntimeException("Authentication required"));
+
+            User user = userRepository.findById(currentUser.getId())
+                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + currentUser.getId()));
+
+            user.setDisabled(true);
+            userRepository.save(user);
+
+            // Send confirmation email that account has been disabled
+            emailService.sendAccountDisabledEmail(user);
+
+            log.info(LogCategory.user("User account disabled successfully - id: {}"), user.getId());
+            return ResponseEntity.ok(new MessageResponse("Account disabled successfully"));
+        } catch (RuntimeException e) {
+            if ("Authentication required".equals(e.getMessage())) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse(e.getMessage(), HttpStatus.UNAUTHORIZED.value()));
+            }
+
+            log.warn(LogCategory.user("Disable account failed - {}"), e.getMessage());
+            return ResponseEntity
+                    .status(e instanceof UserNotFoundException ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(),
+                            e instanceof UserNotFoundException ? HttpStatus.NOT_FOUND.value() : HttpStatus.BAD_REQUEST.value()));
+        } catch (Exception e) {
+            log.error(LogCategory.error("Disable account error - {}"), e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("An error occurred while disabling account",
                             HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }

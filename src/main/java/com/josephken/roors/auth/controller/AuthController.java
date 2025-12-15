@@ -3,6 +3,7 @@ package com.josephken.roors.auth.controller;
 import com.josephken.roors.auth.dto.*;
 import com.josephken.roors.auth.exception.*;
 import com.josephken.roors.auth.service.AuthService;
+import com.josephken.roors.auth.service.PasswordService;
 import com.josephken.roors.common.util.LogCategory;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordService passwordService;
 
     @Autowired
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordService passwordService) {
         this.authService = authService;
+        this.passwordService = passwordService;
     }
 
     @PostMapping("/register")
@@ -46,40 +49,37 @@ public class AuthController {
                 ));
     }
 
-    /* Change password required the user to be authenticated,
-       so maybe better handled in UserController
-    */
-//
-//    @PostMapping("/change-password")
-//    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-//        try {
-//            // Get the authenticated user's username
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//            // Check if user is authenticated
-//            if (authentication == null || !authentication.isAuthenticated() ||
-//                "anonymousUser".equals(authentication.getPrincipal())) {
-//                log.warn(LogCategory.user("Change password failed - User not authenticated"));
-//                return ResponseEntity
-//                        .status(HttpStatus.UNAUTHORIZED)
-//                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
-//            }
-//
-//            String username = authentication.getName();
-//            log.info(LogCategory.user("Change password attempt - user: {}"), username);
-//
-//            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
-//
-//            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
-//            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
-//
-//        } catch (RuntimeException e) {
-//            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
-//            return ResponseEntity
-//                    .status(HttpStatus.BAD_REQUEST)
-//                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
-//        }
-//    }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            // Get the authenticated user's username
+            org.springframework.security.core.Authentication authentication =
+                    org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+            // Check if user is authenticated
+            if (authentication == null || !authentication.isAuthenticated() ||
+                    "anonymousUser".equals(authentication.getPrincipal())) {
+                log.warn(LogCategory.user("Change password failed - User not authenticated"));
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
+            }
+
+            String username = authentication.getName();
+            log.info(LogCategory.user("Change password attempt - user: {}"), username);
+
+            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
+
+            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
+            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+
+        } catch (RuntimeException e) {
+            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        }
+    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {

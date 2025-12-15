@@ -186,7 +186,7 @@ public class ReservationTableServiceImpl implements ReservationTableService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        emailService.sendEmailReservationConfirmation(user, reservation);
+        emailService.sendEmailReservationConfirmation(user, savedReservation);
 
         log.info(LogCategory.reservation("Reservation with id: {} created successfully for user with id: {}"),
                 reservation.getId(), userId);
@@ -227,8 +227,13 @@ public class ReservationTableServiceImpl implements ReservationTableService {
             reservation.setNumberOfGuests(updateReservationDto.getNumberOfGuests());
         }
 
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        // Send email to notify user about updated reservation details
+        emailService.sendReservationUpdatedEmail(reservation.getUser(), savedReservation);
+
         log.info(LogCategory.reservation("Reservation with id: {} updated successfully"), reservationId);
-        return ReservationMapper.toDto(reservationRepository.save(reservation));
+        return ReservationMapper.toDto(savedReservation);
     }
 
     @Override
@@ -270,8 +275,13 @@ public class ReservationTableServiceImpl implements ReservationTableService {
 
         reservation.setStatus(ReservationStatus.CANCELLED);
 
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        // Send cancellation email
+        emailService.sendReservationCancelledEmail(reservation.getUser(), savedReservation);
+
         log.info(LogCategory.reservation("Reservation with id: {} cancelled successfully"), reservationId);
-        return ReservationMapper.toDto(reservationRepository.save(reservation));
+        return ReservationMapper.toDto(savedReservation);
     }
 
     @Override

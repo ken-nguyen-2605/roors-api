@@ -274,6 +274,10 @@ public class OrderService {
         order.setCancellationReason(request.getReason());
 
         Order cancelledOrder = orderRepository.save(order);
+
+        // Send order cancelled email
+        emailService.sendOrderCancelledEmail(user, cancelledOrder);
+
         log.info(LogCategory.order("Order cancelled successfully: " + orderId));
 
         return mapToResponse(cancelledOrder, null);
@@ -425,12 +429,20 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
 
+        OrderStatus previousStatus = order.getStatus();
+
         // 2. Update the status
-        // Note: If you use an Enum for status, convert string to Enum here
         order.setStatus(newStatus);
 
         // 3. Save and return the updated order
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        // When order transitions to COMPLETED, send rating request email
+        if (previousStatus != OrderStatus.COMPLETED && newStatus == OrderStatus.COMPLETED) {
+            emailService.sendOrderCompletedRatingRequestEmail(order.getUser(), savedOrder);
+        }
+
+        return savedOrder;
     }
 
     // NEW: Get orders with ratings

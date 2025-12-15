@@ -45,7 +45,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login",
                                         "/api/auth/forgot-password", "/api/auth/reset-password",
-                                        "/api/auth/verify-email", "/api/auth/resend-verification", "/api/auth/logout" ).permitAll()
+                                        "/api/auth/verify-email", "/api/auth/resend-verification", "/api/auth/logout", "api/auth/change-password" ).permitAll()
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers("/", "/welcome", "/health").permitAll()

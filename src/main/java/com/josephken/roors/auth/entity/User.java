@@ -31,6 +31,9 @@ public class User implements UserDetails {
 
     @Column(name = "is_verified")
     private boolean isVerified = false;
+
+    @Column(name = "is_disabled")
+    private boolean isDisabled = false;
     
     @Column(name = "verify_token")
     private String verifyToken;
@@ -71,7 +74,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isVerified;
+        return isVerified && !isDisabled;
     }
 
 }
