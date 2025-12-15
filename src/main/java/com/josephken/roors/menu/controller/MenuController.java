@@ -3,6 +3,7 @@ package com.josephken.roors.menu.controller;
 import com.josephken.roors.auth.dto.MessageResponse;
 import com.josephken.roors.menu.dto.MenuItemRequest;
 import com.josephken.roors.menu.dto.MenuItemResponse;
+import com.josephken.roors.menu.dto.DishRatingResponse;
 import com.josephken.roors.menu.service.MenuItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -108,5 +109,12 @@ public class MenuController {
     public ResponseEntity<MessageResponse> deleteMenuItem(@PathVariable Long id) {
         menuItemService.deleteMenuItem(id);
         return ResponseEntity.ok(new MessageResponse("Menu item deleted successfully"));
+    }
+
+    @GetMapping("/{id}/ratings")
+    public ResponseEntity<List<DishRatingResponse>> getDishRatings(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "5") int limit) {
+        return ResponseEntity.ok(menuItemService.getDishRatings(id, limit));
     }
 }

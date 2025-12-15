@@ -31,4 +31,7 @@ public class MenuItemResponse {
     private Integer orderCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    // Like fields (optional, set when user is authenticated)
+    private Boolean isLiked;
+    private Long likeCount;
 }

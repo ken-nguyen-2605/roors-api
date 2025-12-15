@@ -3,6 +3,7 @@ package com.josephken.roors.admin.service;
 import com.josephken.roors.admin.dto.DashboardStats;
 import com.josephken.roors.admin.dto.OrderStatsByDate;
 import com.josephken.roors.admin.dto.TopSellingItem;
+import com.josephken.roors.admin.dto.CategorySales;
 import com.josephken.roors.auth.repository.UserRepository;
 import com.josephken.roors.menu.repository.MenuItemRepository;
 import com.josephken.roors.order.entity.OrderStatus;
@@ -37,10 +38,10 @@ public class StatisticsService {
         long totalUsers = userRepository.count();
 
         List<OrderStatsByDate> revenueOverTime = orderRepository.findOrderStatsByDate(since);
-        List<TopSellingItem> topSellingItems = orderItemRepository.findTopSellingItems()
-                .stream()
-                .limit(5)
-                .collect(Collectors.toList());
+        // All menu items ranked by quantity (no artificial top-5 limit, UI will scroll)
+        List<TopSellingItem> topSellingItems = orderItemRepository.findTopSellingItems();
+
+        List<CategorySales> categorySales = orderItemRepository.findCategorySales();
 
         Map<String, Long> orderStatusDistribution = orderRepository.countOrdersByStatus()
                 .stream()
@@ -57,6 +58,7 @@ public class StatisticsService {
                 .revenueOverTime(revenueOverTime)
                 .topSellingItems(topSellingItems)
                 .orderStatusDistribution(orderStatusDistribution)
+                .categorySales(categorySales)
                 .build();
     }
 }

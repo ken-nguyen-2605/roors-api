@@ -8,6 +8,7 @@ import com.josephken.roors.order.entity.Order;
 import com.josephken.roors.order.entity.OrderItem;
 import com.josephken.roors.order.entity.OrderStatus;
 import com.josephken.roors.order.repository.OrderRepository;
+import com.josephken.roors.order.repository.OrderItemRepository;
 import com.josephken.roors.payment.dto.PaymentResponse;
 import com.josephken.roors.payment.entity.Payment;
 import com.josephken.roors.payment.service.PaymentService;
@@ -39,6 +40,7 @@ import jakarta.persistence.EntityNotFoundException;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final MenuItemRepository menuItemRepository;
     private final PaymentService paymentService;
     private final EmailService emailService;
@@ -496,6 +498,27 @@ public class OrderService {
         item.setDishRatedAt(LocalDateTime.now());
         
         Order savedOrder = orderRepository.save(order);
+        
+        // Update menu item rating based on average of all dish ratings
+        MenuItem menuItem = item.getMenuItem();
+        if (menuItem != null) {
+            Double averageRating = orderItemRepository.calculateAverageRatingByMenuItemId(menuItem.getId());
+            Long reviewCount = orderItemRepository.countRatingsByMenuItemId(menuItem.getId());
+            
+            // Round to 2 decimal places
+            if (averageRating != null) {
+                menuItem.setRating(Math.round(averageRating * 100.0) / 100.0);
+            } else {
+                menuItem.setRating(0.0);
+            }
+            
+            menuItem.setReviewCount(reviewCount != null ? reviewCount.intValue() : 0);
+            menuItemRepository.save(menuItem);
+            
+            log.info(LogCategory.order("Updated menu item rating for " + menuItem.getName() + 
+                    ": " + menuItem.getRating() + " (from " + reviewCount + " reviews)"));
+        }
+        
         return convertToResponse(savedOrder);
     }
 
