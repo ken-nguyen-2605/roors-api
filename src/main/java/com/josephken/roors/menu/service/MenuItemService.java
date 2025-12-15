@@ -58,6 +58,40 @@ public class MenuItemService {
                 .map(this::mapToResponse);
     }
 
+    // Admin methods - return all items including unavailable
+    @Transactional(readOnly = true)
+    public Page<MenuItemResponse> getAllMenuItemsForAdmin(int page, int size, String sortBy, String sortDir) {
+        log.info(LogCategory.menu("Fetching all menu items for admin (including unavailable)"));
+        
+        Sort sort = sortDir.equalsIgnoreCase("desc") 
+                ? Sort.by(sortBy).descending() 
+                : Sort.by(sortBy).ascending();
+        
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return menuItemRepository.findAll(pageable)
+                .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MenuItemResponse> getMenuItemsByCategoryForAdmin(Long categoryId, int page, int size) {
+        log.info(LogCategory.menu("Fetching menu items for category ID (admin): " + categoryId));
+        
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+        
+        Pageable pageable = PageRequest.of(page, size);
+        return menuItemRepository.findByCategory(category, pageable)
+                .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MenuItemResponse> searchMenuItemsForAdmin(String keyword, int page, int size) {
+        log.info(LogCategory.menu("Searching menu items with keyword for admin: " + keyword));
+        Pageable pageable = PageRequest.of(page, size);
+        return menuItemRepository.searchAllMenuItems(keyword != null ? keyword : "", pageable)
+                .map(this::mapToResponse);
+    }
+
     @Transactional(readOnly = true)
     public MenuItemResponse getMenuItemById(Long id) {
         log.info(LogCategory.menu("Fetching menu item with ID: " + id));
