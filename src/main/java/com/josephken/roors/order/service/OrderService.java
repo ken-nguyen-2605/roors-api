@@ -92,11 +92,11 @@ public class OrderService {
 
         // Calculate totals
         order.setSubtotal(subtotal);
-        order.setTaxAmount(subtotal.multiply(BigDecimal.valueOf(0.10))); // 10% tax
+        order.setTaxAmount(subtotal.multiply(BigDecimal.valueOf(0))); // 10% tax
         
         // Delivery fee (if delivery type)
         if (request.getOrderType().name().equals("DELIVERY")) {
-            order.setDeliveryFee(BigDecimal.valueOf(5)); // 20,000 VND
+            order.setDeliveryFee(BigDecimal.valueOf(8000)); // 20,000 VND
         } else {
             order.setDeliveryFee(BigDecimal.ZERO);
         }
@@ -160,6 +160,11 @@ public class OrderService {
                 return mapToResponseWithPayment(order, null);
             }
         });
+    }
+
+    public Order getOrderByOrderNumber(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found with order number: " + orderNumber));
     }
 
     @Transactional(readOnly = true)
@@ -226,7 +231,7 @@ public class OrderService {
 
         // Update totals
         order.setSubtotal(subtotal);
-        order.setTaxAmount(subtotal.multiply(BigDecimal.valueOf(0.10)));
+        order.setTaxAmount(subtotal.multiply(BigDecimal.valueOf(0)));
         
         BigDecimal total = subtotal
                 .add(order.getTaxAmount())

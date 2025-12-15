@@ -87,20 +87,20 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/me").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/webhooks/**").permitAll()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/categories/**", "/api/menu/**").permitAll()
                         .requestMatchers("/api/payments/methods").permitAll()
-                        .requestMatchers("/api/orders/**", "/api/payments/**").permitAll()
                         .requestMatchers("/api/orders/**", "/api/payments/**").authenticated()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/admin/**").permitAll()
-                        .requestMatchers("/api/admin/**").authenticated()  // Admin endpoints require authentication
+                        .requestMatchers("/api/admin/**").authenticated()
                         .requestMatchers("/api/reservations/availability",
                                          "/api/reservations/date-time-availability").permitAll()
                         .requestMatchers("/api/reservations/**").authenticated()
-                        .requestMatchers("/api/tables/**").permitAll()
+                        .requestMatchers("/api/tables/availability").permitAll()
+                        .requestMatchers("/api/tables/**").hasAnyRole("ADMIN", "STAFF")
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated());
 

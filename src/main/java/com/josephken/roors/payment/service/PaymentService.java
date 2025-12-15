@@ -7,6 +7,7 @@ import com.josephken.roors.payment.dto.PaymentResponse;
 import com.josephken.roors.payment.entity.Payment;
 import com.josephken.roors.payment.entity.PaymentMethod;
 import com.josephken.roors.payment.entity.PaymentStatus;
+import com.josephken.roors.payment.entity.SePayTransaction;
 import com.josephken.roors.payment.repository.PaymentRepository;
 import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
