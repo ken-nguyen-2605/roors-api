@@ -1,7 +1,6 @@
 package com.josephken.roors.order.service;
 
 import com.josephken.roors.auth.entity.User;
-import com.josephken.roors.auth.repository.UserRepository;
 import com.josephken.roors.auth.service.UserService;
 import com.josephken.roors.menu.entity.MenuItem;
 import com.josephken.roors.menu.repository.MenuItemRepository;

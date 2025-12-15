@@ -44,7 +44,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (ExpiredJwtException | MalformedJwtException | SignatureException e) {
-            log.error(LogCategory.user("JWT Token exception: "), e.getMessage());
+            log.error(LogCategory.user("JWT Token exception: {}"), e.getMessage());
             request.setAttribute("authException", e);
         } catch (Exception e) {
             log.error(LogCategory.user("Authentication error: {}"), e.getMessage());

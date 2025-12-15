@@ -94,6 +94,32 @@ public class PaymentService {
         return mapToResponse(payment);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Payment getPaymentEntityByOrder(Order order) {
+        log.info(LogCategory.payment("Fetching payment entity for order: " + order.getOrderNumber()));
+
+        return paymentRepository.findByOrder(order)
+                .orElseThrow(() -> new RuntimeException("Payment not found for order: " + order.getOrderNumber()));
+    }
+
+    @Transactional
+    public boolean markPaymentAsPaid(Payment payment, SePayTransaction transaction) {
+        log.info(LogCategory.payment("Marking payment as PAID for payment code: " + payment.getPaymentCode()));
+
+        if (payment.getStatus() == PaymentStatus.PAID) {
+            log.info(LogCategory.payment("Payment already marked as PAID: " + payment.getPaymentCode()));
+            return false;
+        }
+
+        payment.setStatus(PaymentStatus.PAID);
+        payment.setPaidAt(LocalDateTime.now());
+        payment.setTransactionReference("SePay TXN ID: " + transaction.getSepayId());
+        payment.setSePayTransaction(transaction);
+        paymentRepository.save(payment);
+        log.info(LogCategory.payment("Payment marked as PAID successfully: " + payment.getSePayTransaction().getSepayId()));
+        return true;
+    }
+
     @Transactional
     public PaymentResponse confirmPayment(String paymentCode, ConfirmPaymentRequest request) {
         log.info(LogCategory.payment("Confirming payment: " + paymentCode));
