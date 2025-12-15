@@ -1,6 +1,8 @@
 package com.josephken.roors.order.service;
 
 import com.josephken.roors.auth.entity.User;
+import com.josephken.roors.auth.repository.UserRepository;
+import com.josephken.roors.auth.service.UserService;
 import com.josephken.roors.menu.entity.MenuItem;
 import com.josephken.roors.menu.repository.MenuItemRepository;
 import com.josephken.roors.order.dto.*;
@@ -39,6 +41,7 @@ import jakarta.persistence.EntityNotFoundException;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final UserService userService;
     private final MenuItemRepository menuItemRepository;
     private final PaymentService paymentService;
     private final EmailService emailService;
@@ -46,7 +49,8 @@ public class OrderService {
 
 
     @Transactional
-    public OrderResponse createOrder(User user, CreateOrderRequest request) {
+    public OrderResponse createOrder(Long userId, CreateOrderRequest request) {
+            User user = userService.findById(userId);
         log.info(LogCategory.order("Creating order for user: " + user.getEmail()));
 
         // Validate menu items and calculate totals
@@ -129,8 +133,10 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getUserOrders(User user, int page, int size, OrderStatus status) {
+    public Page<OrderResponse> getUserOrders(Long userId, int page, int size, OrderStatus status) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Fetching orders for user: " + user.getEmail()));
+
 
         Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -157,7 +163,8 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public OrderResponse getOrderById(User user, Long orderId) {
+    public OrderResponse getOrderById(Long userId, Long orderId) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Fetching order: " + orderId));
 
         Order order = orderRepository.findById(orderId)
@@ -177,7 +184,8 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse updateOrder(User user, Long orderId, UpdateOrderRequest request) {
+    public OrderResponse updateOrder(Long userId, Long orderId, UpdateOrderRequest request) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Updating order: " + orderId));
 
         Order order = orderRepository.findById(orderId)
@@ -241,7 +249,8 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse cancelOrder(User user, Long orderId, CancelOrderRequest request) {
+    public OrderResponse cancelOrder(Long userId, Long orderId, CancelOrderRequest request) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Cancelling order: " + orderId));
 
         Order order = orderRepository.findById(orderId)
@@ -448,7 +457,8 @@ public class OrderService {
 
     // NEW: Submit order rating
     @Transactional
-    public OrderResponse submitOrderRating(User user, Long orderId, SubmitOrderRatingRequest request) {
+    public OrderResponse submitOrderRating(Long userId, Long orderId, SubmitOrderRatingRequest request) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Submitting rating for order: " + orderId));
         
         Order order = orderRepository.findById(orderId)
@@ -472,7 +482,8 @@ public class OrderService {
 
     // NEW: Submit dish rating
     @Transactional
-    public OrderResponse submitDishRating(User user, Long orderId, Long itemId, SubmitDishRatingRequest request) {
+    public OrderResponse submitDishRating(Long userId, Long orderId, Long itemId, SubmitDishRatingRequest request) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Submitting dish rating for order: " + orderId + ", item: " + itemId));
         
         Order order = orderRepository.findById(orderId)
@@ -545,7 +556,8 @@ public class OrderService {
 
 
     @Transactional
-    public OrderResponse reorder(User user, Long orderId) {
+    public OrderResponse reorder(Long userId, Long orderId) {
+        User user = userService.findById(userId);
         log.info(LogCategory.order("Re-ordering from order: " + orderId));
 
         Order originalOrder = orderRepository.findById(orderId)
@@ -575,7 +587,7 @@ public class OrderService {
                 .collect(Collectors.toList());
         request.setItems(items);
 
-        return createOrder(user, request);
+        return createOrder(userId, request);
     }
 
     private OrderResponse mapToResponse(Order order, Payment payment) {

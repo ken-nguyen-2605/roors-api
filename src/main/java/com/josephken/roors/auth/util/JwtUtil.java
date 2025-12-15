@@ -32,11 +32,19 @@ public class JwtUtil {
     }
 
     public String generateToken(User user) {
+        log.info("JWT Expiration Ms: {}", jwtExpirationMs);  // Add this line
+
+        Date now = new Date();
+        Date expiration = new Date(now.getTime() + jwtExpirationMs);
+
+        log.info("Token issued at: {}, expires at: {}", now, expiration);  // Add this
+
         return Jwts.builder()
                 .subject(user.getId().toString())
+                .claim("username", user.getUsername())
                 .claim("role", user.getRole())
-                .issuedAt(new Date())
-                .expiration(new Date(new Date().getTime() + jwtExpirationMs))
+                .issuedAt(now)
+                .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
     }

@@ -30,10 +30,10 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody CreateOrderRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.createOrder(user, request));
+                .body(orderService.createOrder(userId, request));
     }
 
     @GetMapping("/date/{date}")
@@ -58,13 +58,13 @@ public class OrderController {
 
     @GetMapping("/me")
     public ResponseEntity<Page<OrderResponse>> getUserOrders(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) OrderStatus status) {
 
-        Page<OrderResponse> orderPage = orderService.getUserOrders(user, page, size, status);
-        log.info("Order lookup for user {}: Found {} total orders.", user.getId(), orderPage.getTotalElements());
+        Page<OrderResponse> orderPage = orderService.getUserOrders(userId, page, size, status);
+        log.info("Order lookup for user {}: Found {} total orders.", userId, orderPage.getTotalElements());
         return ResponseEntity.ok(orderPage);
     }
     
@@ -117,33 +117,33 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrderById(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long id) {
-        return ResponseEntity.ok(orderService.getOrderById(user, id));
+        return ResponseEntity.ok(orderService.getOrderById(userId, id));
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<OrderResponse> updateOrder(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long id,
             @Valid @RequestBody UpdateOrderRequest request) {
-        return ResponseEntity.ok(orderService.updateOrder(user, id, request));
+        return ResponseEntity.ok(orderService.updateOrder(userId, id, request));
     }
 
     @PostMapping("/{id}/cancel")
     public ResponseEntity<OrderResponse> cancelOrder(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long id,
             @Valid @RequestBody CancelOrderRequest request) {
-        return ResponseEntity.ok(orderService.cancelOrder(user, id, request));
+        return ResponseEntity.ok(orderService.cancelOrder(userId, id, request));
     }
 
     @PostMapping("/{id}/reorder")
     public ResponseEntity<OrderResponse> reorder(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.reorder(user, id));
+                .body(orderService.reorder(userId, id));
     }
 
     @PutMapping("/{orderId}/status")    
@@ -170,20 +170,20 @@ public class OrderController {
     // NEW: Submit order rating
     @PostMapping("/{orderId}/rating")
     public ResponseEntity<OrderResponse> submitOrderRating(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long orderId,
             @Valid @RequestBody SubmitOrderRatingRequest request) {
-        return ResponseEntity.ok(orderService.submitOrderRating(user, orderId, request));
+        return ResponseEntity.ok(orderService.submitOrderRating(userId, orderId, request));
     }
 
     // NEW: Submit dish rating
     @PostMapping("/{orderId}/items/{itemId}/rating")
     public ResponseEntity<OrderResponse> submitDishRating(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal Long userId,
             @PathVariable Long orderId,
             @PathVariable Long itemId,
             @Valid @RequestBody SubmitDishRatingRequest request) {
-        return ResponseEntity.ok(orderService.submitDishRating(user, orderId, itemId, request));
+        return ResponseEntity.ok(orderService.submitDishRating(userId, orderId, itemId, request));
     }
 
     // NEW: Admin respond to order feedback
