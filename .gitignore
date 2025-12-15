@@ -3,6 +3,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 logs/
+env/
+.env
 
 ### STS ###
 .apt_generated

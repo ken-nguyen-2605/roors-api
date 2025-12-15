@@ -1,5 +1,6 @@
 package com.josephken.roors.auth.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +27,12 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfiguration {
-    @Value("${app.cors.allowed-origins}")
+    @Value("${app.cors.allowed-origins:localhost://3000}")
     private List<String> allowedOrigins;
 
+    private final JwtTokenFilter jwtTokenFilter;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
@@ -60,11 +63,6 @@ public class SecurityConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public JwtTokenFilter authenticationJwtTokenFilter() {
-        return new JwtTokenFilter();
     }
 
     @Bean
@@ -104,7 +102,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated());
 
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
