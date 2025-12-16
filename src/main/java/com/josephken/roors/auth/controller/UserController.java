@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,13 +60,16 @@ public class UserController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateUserProfile(
+            @AuthenticationPrincipal Long currentUserId,
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
 
         log.info(LogCategory.user("Update user profile - id: {}"), id);
 
         try {
-            User currentUser = AuthenticationHelper.getCurrentUser()
+//            User currentUser = AuthenticationHelper.getCurrentUser()
+//                    .orElseThrow(() -> new RuntimeException("Authentication required"));
+            User currentUser = userRepository.findById(currentUserId)
                     .orElseThrow(() -> new RuntimeException("Authentication required"));
 
             // Check if user is updating their own profile
@@ -159,11 +163,16 @@ public class UserController {
     }
 
     @PostMapping("/{id}/liked-dishes/{dishId}")
-    public ResponseEntity<?> addLikedDish(@PathVariable Long id, @PathVariable Long dishId) {
+    public ResponseEntity<?> addLikedDish(
+            @AuthenticationPrincipal Long currentUserId,
+            @PathVariable Long id,
+            @PathVariable Long dishId) {
         log.info(LogCategory.user("Add liked dish - userId: {}, dishId: {}"), id, dishId);
 
         try {
-            User currentUser = AuthenticationHelper.getCurrentUser()
+//            User currentUser = AuthenticationHelper.getCurrentUser()
+//                    .orElseThrow(() -> new RuntimeException("Authentication required"));
+            User currentUser = userRepository.findById(currentUserId)
                     .orElseThrow(() -> new RuntimeException("Authentication required"));
 
             // Check if user is updating their own profile
@@ -201,11 +210,16 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}/liked-dishes/{dishId}")
-    public ResponseEntity<?> removeLikedDish(@PathVariable Long id, @PathVariable Long dishId) {
+    public ResponseEntity<?> removeLikedDish(
+            @AuthenticationPrincipal Long currentUserId,
+            @PathVariable Long id,
+            @PathVariable Long dishId) {
         log.info(LogCategory.user("Remove liked dish - userId: {}, dishId: {}"), id, dishId);
 
         try {
-            User currentUser = AuthenticationHelper.getCurrentUser()
+//            User currentUser = AuthenticationHelper.getCurrentUser()
+//                    .orElseThrow(() -> new RuntimeException("Authentication required"));
+            User currentUser = userRepository.findById(currentUserId)
                     .orElseThrow(() -> new RuntimeException("Authentication required"));
 
             // Check if user is updating their own profile
@@ -243,11 +257,13 @@ public class UserController {
     }
 
     @PostMapping("/disable")
-    public ResponseEntity<?> disableCurrentUser() {
+    public ResponseEntity<?> disableCurrentUser(@AuthenticationPrincipal Long currentUserId) {
         log.info(LogCategory.user("Disable current user account request"));
 
         try {
-            User currentUser = AuthenticationHelper.getCurrentUser()
+//            User currentUser = AuthenticationHelper.getCurrentUser()
+//                    .orElseThrow(() -> new RuntimeException("Authentication required"));
+            User currentUser = userRepository.findById(currentUserId)
                     .orElseThrow(() -> new RuntimeException("Authentication required"));
 
             User user = userRepository.findById(currentUser.getId())

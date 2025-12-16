@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -23,20 +24,29 @@ public class MenuItemLikeController {
     private final MenuItemLikeService menuItemLikeService;
 
     @PostMapping("/{menuItemId}")
-    public ResponseEntity<MessageResponse> likeMenuItem(@PathVariable Long menuItemId) {
-        menuItemLikeService.likeMenuItem(menuItemId);
+    public ResponseEntity<MessageResponse> likeMenuItem(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long menuItemId
+    ) {
+        menuItemLikeService.likeMenuItem(userId, menuItemId);
         return ResponseEntity.ok(new MessageResponse("Menu item liked successfully"));
     }
 
     @DeleteMapping("/{menuItemId}")
-    public ResponseEntity<MessageResponse> unlikeMenuItem(@PathVariable Long menuItemId) {
-        menuItemLikeService.unlikeMenuItem(menuItemId);
+    public ResponseEntity<MessageResponse> unlikeMenuItem(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long menuItemId
+    ) {
+        menuItemLikeService.unlikeMenuItem(userId, menuItemId);
         return ResponseEntity.ok(new MessageResponse("Menu item unliked successfully"));
     }
 
     @GetMapping("/{menuItemId}/status")
-    public ResponseEntity<Map<String, Object>> getLikeStatus(@PathVariable Long menuItemId) {
-        boolean isLiked = menuItemLikeService.isLikedByCurrentUser(menuItemId);
+    public ResponseEntity<Map<String, Object>> getLikeStatus(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long menuItemId
+    ) {
+        boolean isLiked = menuItemLikeService.isLikedByCurrentUser(userId, menuItemId);
         long likeCount = menuItemLikeService.getLikeCount(menuItemId);
         
         Map<String, Object> response = new HashMap<>();
@@ -47,15 +57,16 @@ public class MenuItemLikeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MenuItemResponse>> getLikedMenuItems() {
-        return ResponseEntity.ok(menuItemLikeService.getLikedMenuItems());
+    public ResponseEntity<List<MenuItemResponse>> getLikedMenuItems(@AuthenticationPrincipal Long userId) {
+        return ResponseEntity.ok(menuItemLikeService.getLikedMenuItems(userId));
     }
 
     @GetMapping("/paged")
     public ResponseEntity<Page<MenuItemResponse>> getLikedMenuItemsPaged(
+            @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(menuItemLikeService.getLikedMenuItems(page, size));
+        return ResponseEntity.ok(menuItemLikeService.getLikedMenuItems(userId, page, size));
     }
 
     @GetMapping("/{menuItemId}/count")
