@@ -123,241 +123,241 @@ INSERT INTO menu_items (
 INSERT INTO dining_table (name, floor, capacity, status)
 VALUES
     -- Floor 1 Tables
-    ('T01', 'F1', 2, 0),
-    ('T02', 'F1', 2, 0),
-    ('T03', 'F1', 2, 0),
-    ('T04', 'F1', 2, 0),
-    ('T05', 'F1', 2, 0),
-    ('T06', 'F1', 2, 0),
-    ('T07', 'F1', 2, 0),
-    ('T08', 'F1', 2, 0),
-    ('T09', 'F1', 2, 0),
-    ('T10', 'F1', 2, 0),
-    ('T11', 'F1', 2, 0),
-    ('T12', 'F1', 2, 0),
-    ('T13', 'F1', 2, 0),
-    ('T14', 'F1', 2, 0),
-    ('T15', 'F1', 2, 0),
-    ('T16', 'F1', 2, 0),
-    ('T17', 'F1', 4, 0),
-    ('T18', 'F1', 4, 0),
-    ('T19', 'F1', 4, 0),
-    ('T20', 'F1', 4, 0),
-    ('T21', 'F1', 4, 0),
-    ('T22', 'F1', 4, 0),
-    ('T23', 'F1', 4, 0),
-    ('T24', 'F1', 4, 0),
+    ('T01', 'F1', 2, 'OPEN'),
+    ('T02', 'F1', 2, 'OPEN'),
+    ('T03', 'F1', 2, 'OPEN'),
+    ('T04', 'F1', 2, 'OPEN'),
+    ('T05', 'F1', 2, 'OPEN'),
+    ('T06', 'F1', 2, 'OPEN'),
+    ('T07', 'F1', 2, 'OPEN'),
+    ('T08', 'F1', 2, 'OPEN'),
+    ('T09', 'F1', 2, 'OPEN'),
+    ('T10', 'F1', 2, 'OPEN'),
+    ('T11', 'F1', 2, 'OPEN'),
+    ('T12', 'F1', 2, 'OPEN'),
+    ('T13', 'F1', 2, 'OPEN'),
+    ('T14', 'F1', 2, 'OPEN'),
+    ('T15', 'F1', 2, 'OPEN'),
+    ('T16', 'F1', 2, 'OPEN'),
+    ('T17', 'F1', 4, 'OPEN'),
+    ('T18', 'F1', 4, 'OPEN'),
+    ('T19', 'F1', 4, 'OPEN'),
+    ('T20', 'F1', 4, 'OPEN'),
+    ('T21', 'F1', 4, 'OPEN'),
+    ('T22', 'F1', 4, 'OPEN'),
+    ('T23', 'F1', 4, 'OPEN'),
+    ('T24', 'F1', 4, 'OPEN'),
 
 -- Floor 2 Tables
-    ('T25', 'F2', 4, 0),
-    ('T26', 'F2', 4, 0),
-    ('T27', 'F2', 4, 0),
-    ('T28', 'F2', 4, 0),
-    ('T29', 'F2', 4, 0),
-    ('T30', 'F2', 4, 0),
-    ('T31', 'F2', 4, 0),
-    ('T32', 'F2', 4, 0),
-    ('T33', 'F2', 4, 0),
-    ('T34', 'F2', 4, 0),
-    ('T35', 'F2', 4, 0),
-    ('T36', 'F2', 4, 0),
-    ('T37', 'F2', 8, 0),
-    ('T38', 'F2', 8, 0),
-    ('T39', 'F2', 8, 0),
-    ('T40', 'F2', 8, 0),
-    ('T41', 'F2', 8, 0),
-    ('T42', 'F2', 8, 0),
-    ('T43', 'F2', 8, 0),
-    ('T44', 'F2', 8, 0),
+    ('T25', 'F2', 4, 'OPEN'),
+    ('T26', 'F2', 4, 'OPEN'),
+    ('T27', 'F2', 4, 'OPEN'),
+    ('T28', 'F2', 4, 'OPEN'),
+    ('T29', 'F2', 4, 'OPEN'),
+    ('T30', 'F2', 4, 'OPEN'),
+    ('T31', 'F2', 4, 'OPEN'),
+    ('T32', 'F2', 4, 'OPEN'),
+    ('T33', 'F2', 4, 'OPEN'),
+    ('T34', 'F2', 4, 'OPEN'),
+    ('T35', 'F2', 4, 'OPEN'),
+    ('T36', 'F2', 4, 'OPEN'),
+    ('T37', 'F2', 8, 'OPEN'),
+    ('T38', 'F2', 8, 'OPEN'),
+    ('T39', 'F2', 8, 'OPEN'),
+    ('T40', 'F2', 8, 'OPEN'),
+    ('T41', 'F2', 8, 'OPEN'),
+    ('T42', 'F2', 8, 'OPEN'),
+    ('T43', 'F2', 8, 'OPEN'),
+    ('T44', 'F2', 8, 'OPEN'),
 
 -- Floor 3 Tables
-    ('T45', 'F3', 8, 0),
-    ('T46', 'F3', 8, 0),
-    ('T47', 'F3', 8, 0),
-    ('T48', 'F3', 8, 0),
-    ('T49', 'F3', 8, 0),
-    ('T50', 'F3', 8, 0),
-    ('T51', 'F3', 8, 0),
-    ('T52', 'F3', 8, 0),
-    ('T53', 'F3', 10, 0),
-    ('T54', 'F3', 10, 0),
-    ('T55', 'F3', 10, 0),
-    ('T56', 'F3', 10, 0),
-    ('T57', 'F3', 10, 0);
-
--- =========================================================
--- RESERVATIONS (15 rows) – user_id fixed 253
--- (unchanged)
--- =========================================================
-INSERT INTO reservation (
-    user_id, dining_table_id, status,
-    phone, number_of_guests, start_time, end_time
-) VALUES
-      (253, (SELECT id FROM dining_table WHERE name='T01'),  0, '0900000001', 2, '2025-11-13 18:00:00', '2025-11-13 19:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T02'),  2, '0900000002', 2, '2025-11-13 18:30:00', '2025-11-13 20:00:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T03'),  1, '0900000003', 2, '2025-11-13 19:00:00', '2025-11-13 20:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T04'),  0, '0900000004', 2, '2025-11-13 19:30:00', '2025-11-13 21:00:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T05'),  3, '0900000005', 2, '2025-11-13 20:00:00', '2025-11-13 21:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T06'),  0, '0900000006', 2, '2025-11-14 18:00:00', '2025-11-14 19:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T07'),  2, '0900000007', 2, '2025-11-14 18:30:00', '2025-11-14 20:00:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T08'),  0, '0900000008', 2, '2025-11-14 19:00:00', '2025-11-14 20:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T09'),  1, '0900000009', 2, '2025-11-14 19:30:00', '2025-11-14 21:00:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T10'), 3, '0900000010', 2, '2025-11-14 20:00:00', '2025-11-14 21:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T11'), 0, '0900000011', 2, '2025-11-15 18:00:00', '2025-11-15 19:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T12'), 2, '0900000012', 2, '2025-11-15 18:30:00', '2025-11-15 20:00:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T13'), 0, '0900000013', 2, '2025-11-15 19:00:00', '2025-11-15 20:30:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T14'), 1, '0900000014', 2, '2025-11-15 19:30:00', '2025-11-15 21:00:00'),
-      (253, (SELECT id FROM dining_table WHERE name='T15'), 3, '0900000015', 2, '2025-11-15 20:00:00', '2025-11-15 21:30:00');
-
--- =========================================================
--- ORDERS (15 rows) – user_id fixed 253
--- (unchanged)
--- =========================================================
-INSERT INTO orders (
-    id, user_id, order_number, status, order_type,
-    subtotal, tax_amount, delivery_fee, discount_amount, total_amount,
-    customer_name, customer_phone, customer_email, delivery_address,
-    special_instructions, table_number, estimated_preparation_time,
-    created_at, updated_at,
-    -- NEW COLUMNS (10)
-    preparation_started_at, ready_at, completed_at, cancelled_at,
-    cancellation_reason, rating, feedback, rated_at, admin_response, responded_at
-) VALUES
--- Corresponds to order_id 2001 (PREPARING) - 19 old values + 10 new
-(2001, 253, 'ORD2001', 'PREPARING', 'DELIVERY',
- 48.75, 4.88, 2.00, 0.00, 55.63,
- 'Alice Nguyen', '0901000001', 'alice1@example.com', 'Street 1, City', 'No onions', NULL, 25,
- '2025-11-12 18:37:00', '2025-11-12 18:38:00',
- '2025-11-12 18:38:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
--- Corresponds to order_id 2002 (COMPLETED) - 19 old values + 10 new
-(2002, 253, 'ORD2002', 'COMPLETED', 'DELIVERY',
- 89.20, 8.92, 2.00, 0.00, 100.12,
- 'Bob Tran', '0901000002', 'bob2@example.com', 'Street 2, City', 'Extra sauce', NULL, 30,
- '2025-11-10 19:47:00', '2025-11-10 21:15:00',
- '2025-11-10 19:50:00', '2025-11-10 20:30:00', '2025-11-10 21:15:00', NULL, NULL, 5, 'Great food!', '2025-11-10 21:30:00', 'Thank you!', '2025-11-10 21:35:00'),
-
--- Corresponds to order_id 2003 (PENDING) - 19 old values + 10 new
-(2003, 253, 'ORD2003', 'PENDING', 'DELIVERY',
- 22.50, 2.25, 2.00, 0.00, 26.75,
- 'Charlie Le', '0901000003', 'charlie3@example.com', 'Street 3, City', 'Light ice', NULL, 20,
- '2025-11-11 12:31:30', '2025-11-11 12:31:30',
- NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
--- Corresponds to order_id 2004 (READY) - 19 old values + 10 new
-(2004, 253, 'ORD2004', 'READY', 'DELIVERY',
- 57.00, 5.70, 2.00, 0.00, 64.70,
- 'Dung Vo', '0901000004', 'dung4@example.com', 'Street 4, City', 'Leave at reception', NULL, 30,
- '2025-11-12 19:06:30', '2025-11-12 19:20:00',
- '2025-11-12 19:07:00', '2025-11-12 19:20:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
--- Corresponds to order_id 2005 (COMPLETED) - 19 old values + 10 new
-(2005, 253, 'ORD2005', 'COMPLETED', 'DELIVERY',
- 107.00, 10.70, 2.00, 0.00, 119.70,
- 'Emma Pham', '0901000005', 'emma5@example.com', 'Street 5, City', 'Birthday plate', NULL, 15,
- '2025-11-09 18:47:00', '2025-11-09 20:30:00',
- '2025-11-09 18:50:00', '2025-11-09 19:10:00', '2025-11-09 20:30:00', NULL, NULL, 4, 'Good, but a bit slow.', '2025-11-09 20:45:00', NULL, NULL),
-
--- Corresponds to order_id 2006 (CANCELLED) - 19 old values + 10 new
-(2006, 253, 'ORD2006', 'CANCELLED', 'DELIVERY',
- 41.25, 4.13, 2.00, 0.00, 47.38,
- 'Fred Ho', '0901000006', 'fred6@example.com', 'Street 6, City', 'Service fee reversal', NULL, 25,
- '2025-11-08 20:02:00', '2025-11-08 20:10:00',
- NULL, NULL, NULL, '2025-11-08 20:10:00', 'Customer request', NULL, NULL, NULL, NULL, NULL),
-
--- Corresponds to order_id 2007 (COMPLETED) - 19 old values + 10 new
-(2007, 253, 'ORD2007', 'COMPLETED', 'DELIVERY',
- 76.80, 7.68, 2.00, 0.00, 86.48,
- 'Giang Do', '0901000007', 'giang7@example.com', 'Street 7, City', 'Gate delivery', NULL, 15,
- '2025-11-07 17:56:30', '2025-11-07 19:00:00',
- '2025-11-07 18:00:00', '2025-11-07 18:30:00', '2025-11-07 19:00:00', NULL, NULL, 2, 'Food was cold.', '2025-11-07 19:15:00', 'We are sorry!', '2025-11-07 19:20:00'),
-
--- Corresponds to order_id 2008 (COMPLETED) - 19 old values + 10 new
-(2008, 253, 'ORD2008', 'COMPLETED', 'DELIVERY',
- 33.10, 3.31, 0.00, 0.00, 36.41,
- 'Hoa Vu', '0901000008', 'hoa8@example.com', NULL, 'Pickup by 13:00', NULL, 30,
- '2025-11-06 12:46:30', '2025-11-06 13:30:00',
- '2025-11-06 12:50:00', '2025-11-06 13:20:00', '2025-11-06 13:30:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
--- Corresponds to order_id 2009 (PREPARING) - 19 old values + 10 new
-(2009, 253, 'ORD2009', 'PREPARING', 'DELIVERY',
- 102.90, 10.29, 0.00, 0.00, 113.19,
- 'Ian Phan', '0901000009', 'ian9@example.com', NULL, 'Family set for 4', '12', 20,
- '2025-11-12 19:16:30', '2025-11-12 19:17:00',
- '2025-11-12 19:17:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
--- Corresponds to order_id 2010 (COMPLETED) - 19 old values + 10 new
-(2010, 253, 'ORD2010', 'COMPLETED', 'DELIVERY',
- 59.50, 5.95, 2.00, 0.00, 67.45,
- 'Jane Ha', '0901000010', 'jane10@example.com', 'Street 10, City', 'Call on arrival', NULL, 25,
- '2025-11-01 18:01:30', '2025-11-01 19:00:00',
- '2025-11-01 18:05:00', '2025-11-01 18:30:00', '2025-11-01 19:00:00', NULL, NULL, 3, 'Just okay.', '2025-11-01 19:10:00', NULL, NULL);
-
-
--- =========================================================
--- ORDER ITEMS (15 rows)
--- (unchanged)
--- =========================================================
-
-INSERT INTO order_items (
-    id, order_id, menu_item_id, menu_item_name, unit_price, quantity,
-    subtotal, special_instructions, created_at,
-    dish_rating, dish_feedback, dish_rated_at, admin_dish_response, dish_responded_at
-) VALUES
-
--- Order 2001 (Confirmed - No ratings)
--- ID 7 changed from 'Beef Burger Deluxe' (14.50) to 'Chocolate Cake' (5.50)
-(3001, 2001, 7,  'Chocolate Cake', 5.50, 2, 11.00, NULL, '2025-11-12 18:36:00', NULL, NULL, NULL, NULL, NULL),
--- ID 17 ('Iced Caramel Latte') does not exist in your menu. Item removed.
-
--- Order 2002 (Completed - Rated highly)
--- ID 4 changed from 'Grilled Ribeye Steak' (24.50) to 'Grilled Chicken' (14.50)
-(3003, 2002, 4,  'Grilled Chicken', 14.50, 2, 29.00, 'Extra sauce', '2025-11-10 19:46:00', 5, 'Perfectly cooked medium rare.', '2025-11-10 21:15:00', 'Glad you liked it!', '2025-11-10 22:00:00'),
--- ID 6 changed from 'BBQ Ribs' (40.20) to 'Espresso' (2.00)
-(3004, 2002, 6,  'Espresso', 2.00, 1, 2.00, NULL, '2025-11-10 19:47:00', 5, 'Very tender.', '2025-11-10 21:15:00', NULL, NULL),
-
--- Order 2003 (Pending - No ratings)
--- ID 12 changed from 'Margherita Pizza' (12.50) to 'Mushroom Soup' (6.50)
-(3005, 2003, 12, 'Mushroom Soup', 6.50, 1, 6.50, NULL, '2025-11-11 12:31:00', NULL, NULL, NULL, NULL, NULL),
--- ID 16 ('Fresh Lemonade') does not exist in your menu. Item removed.
-
--- Order 2004 (Confirmed - No ratings)
--- ID 8 changed from 'Grilled Salmon' (27.00) to 'Cheesecake' (5.75)
-(3007, 2004, 8,  'Cheesecake', 5.75, 1, 5.75, 'Leave at reception', '2025-11-12 19:06:00', NULL, NULL, NULL, NULL, NULL),
--- ID 9 changed from 'Shrimp Scampi' (15.00) to 'Caesar Salad' (8.00)
-(3008, 2004, 9,  'Caesar Salad', 8.00, 2, 16.00, NULL, '2025-11-12 19:06:30', NULL, NULL, NULL, NULL, NULL),
-
--- Order 2005 (Completed - Mixed ratings)
--- ID 13 ('Chocolate Lava Cake') does not exist in your menu. Item removed.
--- ID 14 ('New York Cheesecake') does not exist in your menu. Item removed.
-
--- Order 2006 (Cancelled - No ratings)
--- ID 3 changed from 'Mozzarella Sticks' (20.00) to 'Margherita Pizza' (12.00)
-(3011, 2006, 3,  'Margherita Pizza', 12.00, 2, 24.00, NULL, '2025-11-08 20:01:00', NULL, NULL, NULL, NULL, NULL),
--- ID 19 ('Service Fee') does not exist in your menu. Item removed.
-
--- Order 2007 (Completed - Bad ratings)
--- ID 11 changed from 'Vegetable Stir Fry' (18.90) to 'Tomato Soup' (6.00)
-(3013, 2007, 11, 'Tomato Soup', 6.00, 2, 12.00, NULL, '2025-11-07 17:56:00', 1, 'Soggy vegetables.', '2025-11-07 19:00:00', NULL, NULL),
--- ID 4 changed from 'Grilled Ribeye Steak' (39.00) to 'Grilled Chicken' (14.50)
-(3014, 2007, 4,  'Grilled Chicken', 14.50, 1, 14.50, 'Gate delivery', '2025-11-07 17:56:30', 2, 'Cold when arrived.', '2025-11-07 19:00:00', NULL, NULL),
-
--- Order 2008 (Completed - Good ratings, no text)
--- ID 10 changed from 'Mushroom Risotto' (13.50) to 'Greek Salad' (8.50)
-(3015, 2008, 10, 'Greek Salad', 8.50, 1, 8.50, NULL, '2025-11-06 12:46:00', 5, NULL, '2025-11-06 13:30:00', NULL, NULL),
--- ID 16 ('Fresh Lemonade') does not exist in your menu. Item removed.
-
--- Order 2009 (Confirmed - No ratings)
--- ID 4 changed from 'Grilled Ribeye Steak' (25.00) to 'Grilled Chicken' (14.50)
-(3017, 2009, 4,  'Grilled Chicken', 14.50, 4, 58.00, 'Family set for 4', '2025-11-12 19:16:00', NULL, NULL, NULL, NULL, NULL),
--- ID 20 ('Sauce Add-on') does not exist in your menu. Item removed.
-
--- Order 2010 (Completed - Average rating)
--- ID 5 changed from 'Chicken Parmesan' (30.00) to 'Lemon Iced Tea' (2.75)
-(3019, 2010, 5,  'Lemon Iced Tea', 2.75, 1, 2.75, 'Call on arrival', '2025-11-01 18:01:00', 3, 'Chicken was dry.', '2025-11-01 19:00:00', NULL, NULL);
--- ID 17 ('Iced Caramel Latte') does not exist in your menu. Item removed.
-
-
---  ((SELECT id FROM orders WHERE order_number='ORD1013'),
---  (SELECT id FROM menu_items WHERE slug='grilled-chicken'),
---  'Grilled Chicken', 14.50, 2, 29.00, 'Extra sauce.', '2025-11-14 20:02:00');
+    ('T45', 'F3', 8, 'OPEN'),
+    ('T46', 'F3', 8, 'OPEN'),
+    ('T47', 'F3', 8, 'OPEN'),
+    ('T48', 'F3', 8, 'OPEN'),
+    ('T49', 'F3', 8, 'OPEN'),
+    ('T50', 'F3', 8, 'OPEN'),
+    ('T51', 'F3', 8, 'OPEN'),
+    ('T52', 'F3', 8, 'OPEN'),
+    ('T53', 'F3', 10, 'OPEN'),
+    ('T54', 'F3', 10, 'OPEN'),
+    ('T55', 'F3', 10, 'OPEN'),
+    ('T56', 'F3', 10, 'OPEN'),
+    ('T57', 'F3', 10, 'OPEN');
+--
+-- -- =========================================================
+-- -- RESERVATIONS (15 rows) – user_id fixed 253
+-- -- (unchanged)
+-- -- =========================================================
+-- INSERT INTO reservation (
+--     user_id, dining_table_id, status,
+--     phone, number_of_guests, start_time, end_time
+-- ) VALUES
+--       (253, (SELECT id FROM dining_table WHERE name='T01'),  0, '0900000001', 2, '2025-11-13 18:00:00', '2025-11-13 19:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T02'),  2, '0900000002', 2, '2025-11-13 18:30:00', '2025-11-13 20:00:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T03'),  1, '0900000003', 2, '2025-11-13 19:00:00', '2025-11-13 20:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T04'),  0, '0900000004', 2, '2025-11-13 19:30:00', '2025-11-13 21:00:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T05'),  3, '0900000005', 2, '2025-11-13 20:00:00', '2025-11-13 21:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T06'),  0, '0900000006', 2, '2025-11-14 18:00:00', '2025-11-14 19:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T07'),  2, '0900000007', 2, '2025-11-14 18:30:00', '2025-11-14 20:00:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T08'),  0, '0900000008', 2, '2025-11-14 19:00:00', '2025-11-14 20:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T09'),  1, '0900000009', 2, '2025-11-14 19:30:00', '2025-11-14 21:00:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T10'), 3, '0900000010', 2, '2025-11-14 20:00:00', '2025-11-14 21:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T11'), 0, '0900000011', 2, '2025-11-15 18:00:00', '2025-11-15 19:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T12'), 2, '0900000012', 2, '2025-11-15 18:30:00', '2025-11-15 20:00:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T13'), 0, '0900000013', 2, '2025-11-15 19:00:00', '2025-11-15 20:30:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T14'), 1, '0900000014', 2, '2025-11-15 19:30:00', '2025-11-15 21:00:00'),
+--       (253, (SELECT id FROM dining_table WHERE name='T15'), 3, '0900000015', 2, '2025-11-15 20:00:00', '2025-11-15 21:30:00');
+--
+-- -- =========================================================
+-- -- ORDERS (15 rows) – user_id fixed 253
+-- -- (unchanged)
+-- -- =========================================================
+-- INSERT INTO orders (
+--     id, user_id, order_number, status, order_type,
+--     subtotal, tax_amount, delivery_fee, discount_amount, total_amount,
+--     customer_name, customer_phone, customer_email, delivery_address,
+--     special_instructions, table_number, estimated_preparation_time,
+--     created_at, updated_at,
+--     -- NEW COLUMNS (10)
+--     preparation_started_at, ready_at, completed_at, cancelled_at,
+--     cancellation_reason, rating, feedback, rated_at, admin_response, responded_at
+-- ) VALUES
+-- -- Corresponds to order_id 2001 (PREPARING) - 19 old values + 10 new
+-- (2001, 253, 'ORD2001', 'PREPARING', 'DELIVERY',
+--  48.75, 4.88, 2.00, 0.00, 55.63,
+--  'Alice Nguyen', '0901000001', 'alice1@example.com', 'Street 1, City', 'No onions', NULL, 25,
+--  '2025-11-12 18:37:00', '2025-11-12 18:38:00',
+--  '2025-11-12 18:38:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Corresponds to order_id 2002 (COMPLETED) - 19 old values + 10 new
+-- (2002, 253, 'ORD2002', 'COMPLETED', 'DELIVERY',
+--  89.20, 8.92, 2.00, 0.00, 100.12,
+--  'Bob Tran', '0901000002', 'bob2@example.com', 'Street 2, City', 'Extra sauce', NULL, 30,
+--  '2025-11-10 19:47:00', '2025-11-10 21:15:00',
+--  '2025-11-10 19:50:00', '2025-11-10 20:30:00', '2025-11-10 21:15:00', NULL, NULL, 5, 'Great food!', '2025-11-10 21:30:00', 'Thank you!', '2025-11-10 21:35:00'),
+--
+-- -- Corresponds to order_id 2003 (PENDING) - 19 old values + 10 new
+-- (2003, 253, 'ORD2003', 'PENDING', 'DELIVERY',
+--  22.50, 2.25, 2.00, 0.00, 26.75,
+--  'Charlie Le', '0901000003', 'charlie3@example.com', 'Street 3, City', 'Light ice', NULL, 20,
+--  '2025-11-11 12:31:30', '2025-11-11 12:31:30',
+--  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Corresponds to order_id 2004 (READY) - 19 old values + 10 new
+-- (2004, 253, 'ORD2004', 'READY', 'DELIVERY',
+--  57.00, 5.70, 2.00, 0.00, 64.70,
+--  'Dung Vo', '0901000004', 'dung4@example.com', 'Street 4, City', 'Leave at reception', NULL, 30,
+--  '2025-11-12 19:06:30', '2025-11-12 19:20:00',
+--  '2025-11-12 19:07:00', '2025-11-12 19:20:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Corresponds to order_id 2005 (COMPLETED) - 19 old values + 10 new
+-- (2005, 253, 'ORD2005', 'COMPLETED', 'DELIVERY',
+--  107.00, 10.70, 2.00, 0.00, 119.70,
+--  'Emma Pham', '0901000005', 'emma5@example.com', 'Street 5, City', 'Birthday plate', NULL, 15,
+--  '2025-11-09 18:47:00', '2025-11-09 20:30:00',
+--  '2025-11-09 18:50:00', '2025-11-09 19:10:00', '2025-11-09 20:30:00', NULL, NULL, 4, 'Good, but a bit slow.', '2025-11-09 20:45:00', NULL, NULL),
+--
+-- -- Corresponds to order_id 2006 (CANCELLED) - 19 old values + 10 new
+-- (2006, 253, 'ORD2006', 'CANCELLED', 'DELIVERY',
+--  41.25, 4.13, 2.00, 0.00, 47.38,
+--  'Fred Ho', '0901000006', 'fred6@example.com', 'Street 6, City', 'Service fee reversal', NULL, 25,
+--  '2025-11-08 20:02:00', '2025-11-08 20:10:00',
+--  NULL, NULL, NULL, '2025-11-08 20:10:00', 'Customer request', NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Corresponds to order_id 2007 (COMPLETED) - 19 old values + 10 new
+-- (2007, 253, 'ORD2007', 'COMPLETED', 'DELIVERY',
+--  76.80, 7.68, 2.00, 0.00, 86.48,
+--  'Giang Do', '0901000007', 'giang7@example.com', 'Street 7, City', 'Gate delivery', NULL, 15,
+--  '2025-11-07 17:56:30', '2025-11-07 19:00:00',
+--  '2025-11-07 18:00:00', '2025-11-07 18:30:00', '2025-11-07 19:00:00', NULL, NULL, 2, 'Food was cold.', '2025-11-07 19:15:00', 'We are sorry!', '2025-11-07 19:20:00'),
+--
+-- -- Corresponds to order_id 2008 (COMPLETED) - 19 old values + 10 new
+-- (2008, 253, 'ORD2008', 'COMPLETED', 'DELIVERY',
+--  33.10, 3.31, 0.00, 0.00, 36.41,
+--  'Hoa Vu', '0901000008', 'hoa8@example.com', NULL, 'Pickup by 13:00', NULL, 30,
+--  '2025-11-06 12:46:30', '2025-11-06 13:30:00',
+--  '2025-11-06 12:50:00', '2025-11-06 13:20:00', '2025-11-06 13:30:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Corresponds to order_id 2009 (PREPARING) - 19 old values + 10 new
+-- (2009, 253, 'ORD2009', 'PREPARING', 'DELIVERY',
+--  102.90, 10.29, 0.00, 0.00, 113.19,
+--  'Ian Phan', '0901000009', 'ian9@example.com', NULL, 'Family set for 4', '12', 20,
+--  '2025-11-12 19:16:30', '2025-11-12 19:17:00',
+--  '2025-11-12 19:17:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Corresponds to order_id 2010 (COMPLETED) - 19 old values + 10 new
+-- (2010, 253, 'ORD2010', 'COMPLETED', 'DELIVERY',
+--  59.50, 5.95, 2.00, 0.00, 67.45,
+--  'Jane Ha', '0901000010', 'jane10@example.com', 'Street 10, City', 'Call on arrival', NULL, 25,
+--  '2025-11-01 18:01:30', '2025-11-01 19:00:00',
+--  '2025-11-01 18:05:00', '2025-11-01 18:30:00', '2025-11-01 19:00:00', NULL, NULL, 3, 'Just okay.', '2025-11-01 19:10:00', NULL, NULL);
+--
+--
+-- -- =========================================================
+-- -- ORDER ITEMS (15 rows)
+-- -- (unchanged)
+-- -- =========================================================
+--
+-- INSERT INTO order_items (
+--     id, order_id, menu_item_id, menu_item_name, unit_price, quantity,
+--     subtotal, special_instructions, created_at,
+--     dish_rating, dish_feedback, dish_rated_at, admin_dish_response, dish_responded_at
+-- ) VALUES
+--
+-- -- Order 2001 (Confirmed - No ratings)
+-- -- ID 7 changed from 'Beef Burger Deluxe' (14.50) to 'Chocolate Cake' (5.50)
+-- (3001, 2001, 7,  'Chocolate Cake', 5.50, 2, 11.00, NULL, '2025-11-12 18:36:00', NULL, NULL, NULL, NULL, NULL),
+-- -- ID 17 ('Iced Caramel Latte') does not exist in your menu. Item removed.
+--
+-- -- Order 2002 (Completed - Rated highly)
+-- -- ID 4 changed from 'Grilled Ribeye Steak' (24.50) to 'Grilled Chicken' (14.50)
+-- (3003, 2002, 4,  'Grilled Chicken', 14.50, 2, 29.00, 'Extra sauce', '2025-11-10 19:46:00', 5, 'Perfectly cooked medium rare.', '2025-11-10 21:15:00', 'Glad you liked it!', '2025-11-10 22:00:00'),
+-- -- ID 6 changed from 'BBQ Ribs' (40.20) to 'Espresso' (2.00)
+-- (3004, 2002, 6,  'Espresso', 2.00, 1, 2.00, NULL, '2025-11-10 19:47:00', 5, 'Very tender.', '2025-11-10 21:15:00', NULL, NULL),
+--
+-- -- Order 2003 (Pending - No ratings)
+-- -- ID 12 changed from 'Margherita Pizza' (12.50) to 'Mushroom Soup' (6.50)
+-- (3005, 2003, 12, 'Mushroom Soup', 6.50, 1, 6.50, NULL, '2025-11-11 12:31:00', NULL, NULL, NULL, NULL, NULL),
+-- -- ID 16 ('Fresh Lemonade') does not exist in your menu. Item removed.
+--
+-- -- Order 2004 (Confirmed - No ratings)
+-- -- ID 8 changed from 'Grilled Salmon' (27.00) to 'Cheesecake' (5.75)
+-- (3007, 2004, 8,  'Cheesecake', 5.75, 1, 5.75, 'Leave at reception', '2025-11-12 19:06:00', NULL, NULL, NULL, NULL, NULL),
+-- -- ID 9 changed from 'Shrimp Scampi' (15.00) to 'Caesar Salad' (8.00)
+-- (3008, 2004, 9,  'Caesar Salad', 8.00, 2, 16.00, NULL, '2025-11-12 19:06:30', NULL, NULL, NULL, NULL, NULL),
+--
+-- -- Order 2005 (Completed - Mixed ratings)
+-- -- ID 13 ('Chocolate Lava Cake') does not exist in your menu. Item removed.
+-- -- ID 14 ('New York Cheesecake') does not exist in your menu. Item removed.
+--
+-- -- Order 2006 (Cancelled - No ratings)
+-- -- ID 3 changed from 'Mozzarella Sticks' (20.00) to 'Margherita Pizza' (12.00)
+-- (3011, 2006, 3,  'Margherita Pizza', 12.00, 2, 24.00, NULL, '2025-11-08 20:01:00', NULL, NULL, NULL, NULL, NULL),
+-- -- ID 19 ('Service Fee') does not exist in your menu. Item removed.
+--
+-- -- Order 2007 (Completed - Bad ratings)
+-- -- ID 11 changed from 'Vegetable Stir Fry' (18.90) to 'Tomato Soup' (6.00)
+-- (3013, 2007, 11, 'Tomato Soup', 6.00, 2, 12.00, NULL, '2025-11-07 17:56:00', 1, 'Soggy vegetables.', '2025-11-07 19:00:00', NULL, NULL),
+-- -- ID 4 changed from 'Grilled Ribeye Steak' (39.00) to 'Grilled Chicken' (14.50)
+-- (3014, 2007, 4,  'Grilled Chicken', 14.50, 1, 14.50, 'Gate delivery', '2025-11-07 17:56:30', 2, 'Cold when arrived.', '2025-11-07 19:00:00', NULL, NULL),
+--
+-- -- Order 2008 (Completed - Good ratings, no text)
+-- -- ID 10 changed from 'Mushroom Risotto' (13.50) to 'Greek Salad' (8.50)
+-- (3015, 2008, 10, 'Greek Salad', 8.50, 1, 8.50, NULL, '2025-11-06 12:46:00', 5, NULL, '2025-11-06 13:30:00', NULL, NULL),
+-- -- ID 16 ('Fresh Lemonade') does not exist in your menu. Item removed.
+--
+-- -- Order 2009 (Confirmed - No ratings)
+-- -- ID 4 changed from 'Grilled Ribeye Steak' (25.00) to 'Grilled Chicken' (14.50)
+-- (3017, 2009, 4,  'Grilled Chicken', 14.50, 4, 58.00, 'Family set for 4', '2025-11-12 19:16:00', NULL, NULL, NULL, NULL, NULL),
+-- -- ID 20 ('Sauce Add-on') does not exist in your menu. Item removed.
+--
+-- -- Order 2010 (Completed - Average rating)
+-- -- ID 5 changed from 'Chicken Parmesan' (30.00) to 'Lemon Iced Tea' (2.75)
+-- (3019, 2010, 5,  'Lemon Iced Tea', 2.75, 1, 2.75, 'Call on arrival', '2025-11-01 18:01:00', 3, 'Chicken was dry.', '2025-11-01 19:00:00', NULL, NULL);
+-- -- ID 17 ('Iced Caramel Latte') does not exist in your menu. Item removed.
+--
+--
+-- --  ((SELECT id FROM orders WHERE order_number='ORD1013'),
+-- --  (SELECT id FROM menu_items WHERE slug='grilled-chicken'),
+-- --  'Grilled Chicken', 14.50, 2, 29.00, 'Extra sauce.', '2025-11-14 20:02:00');
