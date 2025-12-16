@@ -48,9 +48,9 @@ public class User implements UserDetails {
     @Column(name = "member_since", updatable = false)
     private LocalDateTime memberSince;
 
-    @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Column(name = "role", nullable = false)
+    private UserRole role = UserRole.CUSTOMER;
 
     @Column(name = "is_verified")
     private boolean isVerified = false;
@@ -84,11 +84,6 @@ public class User implements UserDetails {
             memberSince = LocalDateTime.now();
         }
     }
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role = UserRole.CUSTOMER;
-
     // UserDetails methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

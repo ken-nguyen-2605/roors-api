@@ -51,12 +51,12 @@ public class AuthController {
                 ));
     }
 
-    @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(authService.refreshToken(request.getRefreshToken()));
-    }
+//    @PostMapping("/refresh-token")
+//    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .body(authService.refreshToken(request.getRefreshToken()));
+//    }
 
     /* Change password required the user to be authenticated,
        so maybe better handled in UserController
