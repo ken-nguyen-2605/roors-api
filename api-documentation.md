@@ -369,15 +369,85 @@ Base Path: `/api/menu`
   - `/api/menu/popular`
 - **Description**: Retrieves lists of featured, top-rated, or popular menu items.
 
-### 7. Create/Update/Delete Menu Item
+### 7. Create Menu Item (Admin)
 
-- **Methods**: `POST`, `PUT`, `PATCH`, `DELETE`
+- **Method**: `POST`
+- **Endpoint**: `/api/menu`
+- **Description**: Creates a new menu item.
+- **Authentication**: Requires Admin role.
+- **Request Body**:
+  ```json
+  {
+    "name": "Grilled Chicken",
+    "description": "Juicy grilled chicken breast with herbs",
+    "price": 12.99,
+    "categoryId": 1,
+    "imageUrl": "https://cdn.example.com/images/grilled-chicken.jpg",
+    "isAvailable": true,
+    "isFeatured": false,
+    "preparationTime": 15,
+    "spicyLevel": 1,
+    "ingredients": "Chicken, herbs, olive oil",
+    "allergens": "None",
+    "calories": 320,
+    "servingSize": "250g"
+  }
+  ```
+- **Field Notes**:
+  - `name` (string, required)
+  - `price` (number, required, > 0)
+  - `categoryId` (number, required, must match an existing category)
+  - `imageUrl` (string, optional). Accepts any string; typically an `http/https` URL. A data URL works if within server size limits.
+  - `isAvailable`, `isFeatured` (booleans, optional; default `true`/`false`)
+  - `preparationTime`, `spicyLevel`, `calories` (numbers, optional)
+  - `ingredients`, `allergens`, `servingSize`, `description` (strings, optional)
+- **Success Response (201 Created)**:
+  ```json
+  {
+    "id": 10,
+    "name": "Grilled Chicken",
+    "slug": "grilled-chicken",
+    "description": "Juicy grilled chicken breast with herbs",
+    "price": 12.99,
+    "category": {
+      "id": 1,
+      "name": "Mains",
+      "slug": "mains",
+      "description": "Main courses",
+      "imageUrl": null,
+      "displayOrder": 1,
+      "isActive": true,
+      "createdAt": "2024-01-01T12:00:00",
+      "updatedAt": "2024-01-01T12:00:00"
+    },
+    "imageUrl": "https://cdn.example.com/images/grilled-chicken.jpg",
+    "isAvailable": true,
+    "isFeatured": false,
+    "preparationTime": 15,
+    "spicyLevel": 1,
+    "ingredients": "Chicken, herbs, olive oil",
+    "allergens": "None",
+    "calories": 320,
+    "servingSize": "250g",
+    "rating": 0.0,
+    "reviewCount": 0,
+    "orderCount": 0,
+    "createdAt": "2024-01-01T12:00:00",
+    "updatedAt": "2024-01-01T12:00:00"
+  }
+  ```
+- **Error Responses**:
+  - `400 Bad Request` for validation failures (missing name/price/categoryId, price ≤ 0, duplicate name/slug)
+  - `404 Not Found` if `categoryId` does not exist
+  - `500 Internal Server Error` for uncaught server errors (e.g., oversized payload)
+
+### 8. Update/Delete/Toggle Menu Item (Admin)
+
 - **Endpoints**:
-  - `POST /api/menu`
   - `PUT /api/menu/{id}`
   - `PATCH /api/menu/{id}/toggle-availability`
   - `DELETE /api/menu/{id}`
-- **Description**: Endpoints for managing menu items. (Admin only)
+- **Description**: Update, toggle availability, or delete an item. (Admin only)
 - **Authentication**: Requires Admin role.
 
 ---

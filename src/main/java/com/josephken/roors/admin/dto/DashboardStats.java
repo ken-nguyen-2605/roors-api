@@ -17,4 +17,5 @@ public class DashboardStats {
     private List<OrderStatsByDate> revenueOverTime;
     private List<TopSellingItem> topSellingItems;
     private Map<String, Long> orderStatusDistribution;
+    private List<CategorySales> categorySales;
 }
