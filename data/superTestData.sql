@@ -32,28 +32,28 @@ INSERT INTO menu_items (
     created_at, updated_at, category_id
 ) VALUES
       ('Garlic Bread', 'garlic-bread', 'Toasted bread with garlic butter and herbs.',
-       10000.00, '/dishes/dish1.jpg', TRUE, FALSE, 10, 0,
+       15000.00, '/dishes/dish1.jpg', TRUE, FALSE, 10, 0,
        'Bread, garlic, butter, parsley', 'Gluten, dairy', 250, '2 slices',
        4.5, 10, 50,
        '2025-01-10 11:00:00', '2025-01-10 11:00:00',
        (SELECT id FROM categories WHERE slug = 'appetizers')),
 
       ('Bruschetta', 'bruschetta', 'Grilled bread with tomato and basil.',
-       10000.00, '/dishes/dish2.jpg', TRUE, TRUE, 12, 0,
+       18000.00, '/dishes/dish2.jpg', TRUE, TRUE, 12, 0,
        'Bread, tomato, basil, olive oil', 'Gluten', 180, '3 pieces',
        4.7, 8, 40,
        '2025-01-10 11:01:00', '2025-01-10 11:01:00',
        (SELECT id FROM categories WHERE slug = 'appetizers')),
 
       ('Margherita Pizza', 'margherita-pizza', 'Classic pizza with tomato, mozzarella, and basil.',
-       110000.00, '/dishes/dish3.jpg', TRUE, TRUE, 20, 1,
+       129000.00, '/dishes/dish3.jpg', TRUE, TRUE, 20, 1,
        'Flour, tomato, mozzarella, basil', 'Gluten, dairy', 900, '1 pizza',
        4.8, 25, 120,
        '2025-01-10 11:02:00', '2025-01-10 11:02:00',
        (SELECT id FROM categories WHERE slug = 'main-course')),
 
       ('Grilled Chicken', 'grilled-chicken', 'Herb-marinated grilled chicken breast.',
-       110000.00, '/dishes/dish4.jpg', TRUE, FALSE, 18, 1,
+       135000.00, '/dishes/dish4.jpg', TRUE, FALSE, 18, 1,
        'Chicken, herbs, olive oil', NULL, 350, '250 g',
        4.6, 15, 70,
        '2025-01-10 11:03:00', '2025-01-10 11:03:00',

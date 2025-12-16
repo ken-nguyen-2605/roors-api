@@ -2,6 +2,7 @@ package com.josephken.roors.menu.service;
 
 import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.repository.UserRepository;
+import com.josephken.roors.auth.service.UserService;
 import com.josephken.roors.auth.util.AuthenticationHelper;
 import com.josephken.roors.menu.dto.MenuItemResponse;
 import com.josephken.roors.menu.entity.MenuItem;
@@ -31,10 +32,12 @@ public class MenuItemLikeService {
     private final MenuItemService menuItemService;
 
     @Transactional
-    public void likeMenuItem(Long menuItemId) {
-        User user = AuthenticationHelper.getCurrentUser()
+    public void likeMenuItem(Long userId, Long menuItemId) {
+//        User user = AuthenticationHelper.getCurrentUser()
+//                .orElseThrow(() -> new RuntimeException("User must be authenticated to like menu items"));
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User must be authenticated to like menu items"));
-        
+
         // Fetch the user from repository to ensure it's managed
         User managedUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -57,9 +60,11 @@ public class MenuItemLikeService {
     }
 
     @Transactional
-    public void unlikeMenuItem(Long menuItemId) {
-        User user = AuthenticationHelper.getCurrentUser()
-                .orElseThrow(() -> new RuntimeException("User must be authenticated to unlike menu items"));
+    public void unlikeMenuItem(Long userId, Long menuItemId) {
+//        User user = AuthenticationHelper.getCurrentUser()
+//                .orElseThrow(() -> new RuntimeException("User must be authenticated to unlike menu items"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User must be authenticated to like menu items"));
         
         // Fetch the user from repository to ensure it's managed
         User managedUser = userRepository.findById(user.getId())
@@ -77,47 +82,50 @@ public class MenuItemLikeService {
     }
 
     @Transactional(readOnly = true)
-    public boolean isLikedByCurrentUser(Long menuItemId) {
-        return AuthenticationHelper.getCurrentUser()
-                .map(user -> {
-                    User managedUser = userRepository.findById(user.getId()).orElse(null);
-                    if (managedUser == null) return false;
-                    
-                    MenuItem menuItem = menuItemRepository.findById(menuItemId).orElse(null);
-                    if (menuItem == null) return false;
-                    
-                    return userMenuItemLikeRepository.existsByUserAndMenuItem(managedUser, menuItem);
-                })
-                .orElse(false);
+    public boolean isLikedByCurrentUser(Long userId, Long menuItemId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User must be authenticated to like menu items"));
+
+        // Fetch the user from repository to ensure it's managed
+        User managedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                .orElseThrow(() -> new RuntimeException("Menu item not found with ID: " + menuItemId));
+
+        return userMenuItemLikeRepository.existsByUserAndMenuItem(managedUser, menuItem);
     }
 
     @Transactional(readOnly = true)
-    public List<MenuItemResponse> getLikedMenuItems() {
-        User user = AuthenticationHelper.getCurrentUser()
-                .orElseThrow(() -> new RuntimeException("User must be authenticated to view liked menu items"));
-        
+    public List<MenuItemResponse> getLikedMenuItems(Long userId) {
+//        User user = AuthenticationHelper.getCurrentUser()
+//                .orElseThrow(() -> new RuntimeException("User must be authenticated to view liked menu items"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User must be authenticated to like menu items"));
+
         User managedUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         List<MenuItem> likedMenuItems = userMenuItemLikeRepository.findLikedMenuItemsByUser(managedUser);
         
         return likedMenuItems.stream()
-                .map(item -> enrichWithLikeInfo(menuItemService.mapToResponse(item), item.getId(), true))
+                .map(item -> enrichWithLikeInfo(userId, menuItemService.mapToResponse(item), item.getId(), true))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Page<MenuItemResponse> getLikedMenuItems(int page, int size) {
-        User user = AuthenticationHelper.getCurrentUser()
-                .orElseThrow(() -> new RuntimeException("User must be authenticated to view liked menu items"));
-        
+    public Page<MenuItemResponse> getLikedMenuItems(Long userId, int page, int size) {
+//        User user = AuthenticationHelper.getCurrentUser()
+//                .orElseThrow(() -> new RuntimeException("User must be authenticated to view liked menu items"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User must be authenticated to like menu items"));
+
         User managedUser = userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         Pageable pageable = PageRequest.of(page, size);
         Page<MenuItem> likedMenuItems = userMenuItemLikeRepository.findLikedMenuItemsByUser(managedUser, pageable);
         
-        return likedMenuItems.map(item -> enrichWithLikeInfo(menuItemService.mapToResponse(item), item.getId(), true));
+        return likedMenuItems.map(item -> enrichWithLikeInfo(userId, menuItemService.mapToResponse(item), item.getId(), true));
     }
 
     @Transactional(readOnly = true)
@@ -134,8 +142,8 @@ public class MenuItemLikeService {
      * @param menuItemId The menu item ID
      * @param isLikedKnown If true, sets isLiked to true directly (optimization for already-liked items)
      */
-    private MenuItemResponse enrichWithLikeInfo(MenuItemResponse response, Long menuItemId, boolean isLikedKnown) {
-        response.setIsLiked(isLikedKnown || isLikedByCurrentUser(menuItemId));
+    private MenuItemResponse enrichWithLikeInfo(Long userId, MenuItemResponse response, Long menuItemId, boolean isLikedKnown) {
+        response.setIsLiked(isLikedKnown || isLikedByCurrentUser(userId, menuItemId));
         response.setLikeCount(getLikeCount(menuItemId));
         return response;
     }
