@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -51,69 +52,22 @@ public class AuthController {
                 ));
     }
 
-//    @PostMapping("/refresh-token")
-//    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-//        return ResponseEntity
-//                .status(HttpStatus.OK)
-//                .body(authService.refreshToken(request.getRefreshToken()));
-//    }
-
-    /* Change password required the user to be authenticated,
-       so maybe better handled in UserController
-    */
-//
-//    @PostMapping("/change-password")
-//    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-//        try {
-//            // Get the authenticated user's username
-//            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//
-//            // Check if user is authenticated
-//            if (authentication == null || !authentication.isAuthenticated() ||
-//                "anonymousUser".equals(authentication.getPrincipal())) {
-//                log.warn(LogCategory.user("Change password failed - User not authenticated"));
-//                return ResponseEntity
-//                        .status(HttpStatus.UNAUTHORIZED)
-//                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
-//            }
-//
-//            String username = authentication.getName();
-//            log.info(LogCategory.user("Change password attempt - user: {}"), username);
-//
-//            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
-//
-//            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
-//            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
-//
-//        } catch (RuntimeException e) {
-//            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
-//            return ResponseEntity
-//                    .status(HttpStatus.BAD_REQUEST)
-//                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
-//        }
-//    }
     @PostMapping("/change-password")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> changePassword(
+            @AuthenticationPrincipal Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
         try {
-            // Get the authenticated user's username
-            org.springframework.security.core.Authentication authentication =
-                    org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-
-            // Check if user is authenticated
-            if (authentication == null || !authentication.isAuthenticated() ||
-                    "anonymousUser".equals(authentication.getPrincipal())) {
+            if (userId == null) {
                 log.warn(LogCategory.user("Change password failed - User not authenticated"));
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
                         .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
             }
+            log.info(LogCategory.user("Change password attempt - user ID: {}"), userId);
 
-            String username = authentication.getName();
-            log.info(LogCategory.user("Change password attempt - user: {}"), username);
+            passwordService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
 
-            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
-
-            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
+            log.info(LogCategory.user("Password changed successfully - user ID: {}"), userId);
             return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
 
         } catch (RuntimeException e) {
@@ -179,10 +133,10 @@ public class AuthController {
      */
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ErrorResponse> handleDisabledException(DisabledException ex) {
-        log.warn(LogCategory.user("Login failed - User account is not verified: {}"), ex.getMessage());
+        log.warn(LogCategory.user("Login failed - User account disabled: {}"), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
-                .body(new ErrorResponse("User account is not verified", HttpStatus.FORBIDDEN.value()));
+                .body(new ErrorResponse("Your account is disabled. Please contact support.", HttpStatus.FORBIDDEN.value()));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)

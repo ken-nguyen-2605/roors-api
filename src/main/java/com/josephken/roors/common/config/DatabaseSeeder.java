@@ -26,13 +26,13 @@ import java.sql.SQLException;
 @RequiredArgsConstructor
 public class DatabaseSeeder {
 
-    @Value("${ADMIN_EMAIL:josephken020605@gmail.com}")
+    @Value("${app.admin.email}")
     private String adminEmail;
 
-    @Value("${ADMIN_USERNAME:admin}")
+    @Value("${app.admin.username}")
     private String adminUsername;
 
-    @Value("${ADMIN_PASSWORD:password}")
+    @Value("${app.admin.password}")
     private String adminPassword;
 
     @Bean
@@ -59,6 +59,10 @@ public class DatabaseSeeder {
                 userRepository.save(admin);
                 log.info(LogCategory.system("Admin user created with username: {}"), adminUsername);
             }
+
+            System.out.println("Admin Username: " + adminUsername);
+            System.out.println("Admin Password: " + adminPassword);
+            System.out.println("Admin Email: " + adminEmail);
 
             // ---------------------------------------------------------
             // 2. SQL DATA SEEDING (Only if tables are empty)

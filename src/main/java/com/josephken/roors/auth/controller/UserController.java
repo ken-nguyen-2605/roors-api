@@ -29,12 +29,15 @@ public class UserController {
     private final UserRepository userRepository;
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserProfile(@PathVariable Long id) {
+    public ResponseEntity<?> getUserProfile(
+            @AuthenticationPrincipal Long currentUserId,
+            @PathVariable Long id
+    ) {
         log.info(LogCategory.user("Get user profile - id: {}"), id);
 
         try {
-            User user = userRepository.findById(id)
-                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+            User user = userRepository.findById(currentUserId)
+                    .orElseThrow(() -> new UserNotFoundException("User not found with id: " + currentUserId));
 
             UserProfileResponse response = new UserProfileResponse();
             response.setId(user.getId());

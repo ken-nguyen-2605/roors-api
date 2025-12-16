@@ -102,7 +102,7 @@ public class AuthService {
         var role = user.getRole() != null ? user.getRole().name() : UserRole.CUSTOMER.name();
 
         if (!user.isVerified()) {
-            throw new EmailNotVerifiedException("Email not verified for user: " + username);
+            throw new EmailNotVerifiedException("Please check your email to verify your account before logging in.");
         }
 
         log.info(LogCategory.user("Login successful - username: {}"), username);
