@@ -19,6 +19,7 @@ import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.josephken.roors.auth.service.EmailService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class ReservationTableServiceImpl implements ReservationTableService {
     private final ReservationRepository reservationRepository;
     private final DiningTableRepository diningTableRepository;
     private final UserService userService;
+    private final EmailService emailService;
 
     private static final LocalTime OPENING_TIME = LocalTime.of(10, 0);
     private static final LocalTime LAST_RESERVATION_TIME = LocalTime.of(20, 0);
@@ -184,6 +186,8 @@ public class ReservationTableServiceImpl implements ReservationTableService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
+        emailService.sendEmailReservationConfirmation(user, savedReservation);
+
         log.info(LogCategory.reservation("Reservation with id: {} created successfully for user with id: {}"),
                 reservation.getId(), userId);
         return ReservationMapper.toDto(savedReservation);
@@ -223,8 +227,13 @@ public class ReservationTableServiceImpl implements ReservationTableService {
             reservation.setNumberOfGuests(updateReservationDto.getNumberOfGuests());
         }
 
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        // Send email to notify user about updated reservation details
+        emailService.sendReservationUpdatedEmail(reservation.getUser(), savedReservation);
+
         log.info(LogCategory.reservation("Reservation with id: {} updated successfully"), reservationId);
-        return ReservationMapper.toDto(reservationRepository.save(reservation));
+        return ReservationMapper.toDto(savedReservation);
     }
 
     @Override
@@ -266,8 +275,13 @@ public class ReservationTableServiceImpl implements ReservationTableService {
 
         reservation.setStatus(ReservationStatus.CANCELLED);
 
+        Reservation savedReservation = reservationRepository.save(reservation);
+
+        // Send cancellation email
+        emailService.sendReservationCancelledEmail(reservation.getUser(), savedReservation);
+
         log.info(LogCategory.reservation("Reservation with id: {} cancelled successfully"), reservationId);
-        return ReservationMapper.toDto(reservationRepository.save(reservation));
+        return ReservationMapper.toDto(savedReservation);
     }
 
     @Override

@@ -3,11 +3,18 @@ package com.josephken.roors.common.exception;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.josephken.roors.auth.dto.ErrorResponse;
 import com.josephken.roors.common.util.LogCategory;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.*;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -25,6 +32,78 @@ public class GlobalExceptionHandler {
     private static final String DATE_FORMAT = "yyyy-MM-dd";
     private static final String TIME_FORMAT = "HH:mm:ss";
     private static final String DATE_TIME_FORMAT = "yyyy-MM-ddTHH:mm:ss";
+
+    /**
+     * Handle JWT exceptions (for protected endpoints) -> 401 Unauthorized
+     */
+    @ExceptionHandler({
+            ExpiredJwtException.class,
+            SignatureException.class,
+            MalformedJwtException.class
+    })
+    public ResponseEntity<ErrorResponse> handleJwtExceptions(Exception ex) {
+        String message = "JWT token error";
+        if (ex instanceof ExpiredJwtException) {
+            message = "JWT token has expired";
+        } else if (ex instanceof SignatureException) {
+            message = "Invalid JWT signature";
+        } else if (ex instanceof MalformedJwtException) {
+            message = "Malformed JWT token";
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(message, HttpStatus.UNAUTHORIZED.value());
+
+        log.warn(LogCategory.error("Handling JWT Exception: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(errorResponse);
+    }
+
+    /**
+     * Handle Authentication exceptions (for protected endpoints) -> 401 Unauthorized
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        String message;
+
+        if (ex instanceof BadCredentialsException) {
+            message = "Invalid username or password";
+        } else if (ex instanceof UsernameNotFoundException) {
+            message = "User not found";
+//        } else if (ex instanceof DisabledException) {
+//            message = "Email is not verified";
+//        } else if (ex instanceof LockedException) {
+//            message = "Account is locked";
+//        } else if (ex instanceof AccountExpiredException) {
+//            message = "Account has expired";
+//        } else if (ex instanceof CredentialsExpiredException) {
+//            message = "Password has expired";
+        } else {
+            message = ex.getMessage();
+        }
+
+        ErrorResponse errorResponse = new ErrorResponse(message, HttpStatus.UNAUTHORIZED.value());
+
+        log.warn(LogCategory.error("Handling AuthenticationException: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(errorResponse);
+    }
+
+    /**
+     * Handle Access Denied exceptions (for protected endpoints) -> 403 Forbidden
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                "You do not have permission to access this resource",
+                HttpStatus.FORBIDDEN.value());
+
+        log.warn(LogCategory.error("Handling AccessDeniedException: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(errorResponse);
+    }
 
     /**
      * Handle unsupported HTTP methods -> 405 Method Not Allowed
@@ -181,7 +260,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex) {
-        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
+        ErrorResponse response = new ErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST.value());
 
         log.warn(LogCategory.error("Handling BusinessException: {}"), ex.getMessage());
         return ResponseEntity

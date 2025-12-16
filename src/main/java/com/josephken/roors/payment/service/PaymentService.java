@@ -7,6 +7,7 @@ import com.josephken.roors.payment.dto.PaymentResponse;
 import com.josephken.roors.payment.entity.Payment;
 import com.josephken.roors.payment.entity.PaymentMethod;
 import com.josephken.roors.payment.entity.PaymentStatus;
+import com.josephken.roors.payment.entity.SePayTransaction;
 import com.josephken.roors.payment.repository.PaymentRepository;
 import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -82,7 +84,7 @@ public class PaymentService {
         return mapToResponse(payment);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public PaymentResponse getPaymentByOrder(Order order) {
         log.info(LogCategory.payment("Fetching payment for order: " + order.getOrderNumber()));
 
@@ -90,6 +92,32 @@ public class PaymentService {
                 .orElseThrow(() -> new RuntimeException("Payment not found for order: " + order.getOrderNumber()));
 
         return mapToResponse(payment);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Payment getPaymentEntityByOrder(Order order) {
+        log.info(LogCategory.payment("Fetching payment entity for order: " + order.getOrderNumber()));
+
+        return paymentRepository.findByOrder(order)
+                .orElseThrow(() -> new RuntimeException("Payment not found for order: " + order.getOrderNumber()));
+    }
+
+    @Transactional
+    public boolean markPaymentAsPaid(Payment payment, SePayTransaction transaction) {
+        log.info(LogCategory.payment("Marking payment as PAID for payment code: " + payment.getPaymentCode()));
+
+        if (payment.getStatus() == PaymentStatus.PAID) {
+            log.info(LogCategory.payment("Payment already marked as PAID: " + payment.getPaymentCode()));
+            return false;
+        }
+
+        payment.setStatus(PaymentStatus.PAID);
+        payment.setPaidAt(LocalDateTime.now());
+        payment.setTransactionReference("SePay TXN ID: " + transaction.getSepayId());
+        payment.setSePayTransaction(transaction);
+        paymentRepository.save(payment);
+        log.info(LogCategory.payment("Payment marked as PAID successfully: " + payment.getSePayTransaction().getSepayId()));
+        return true;
     }
 
     @Transactional

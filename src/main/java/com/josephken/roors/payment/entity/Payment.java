@@ -70,6 +70,10 @@ public class Payment {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sepay_transaction_id")
+    private SePayTransaction sePayTransaction;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

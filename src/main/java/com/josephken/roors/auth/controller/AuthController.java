@@ -3,6 +3,7 @@ package com.josephken.roors.auth.controller;
 import com.josephken.roors.auth.dto.*;
 import com.josephken.roors.auth.exception.*;
 import com.josephken.roors.auth.service.AuthService;
+import com.josephken.roors.auth.service.PasswordService;
 import com.josephken.roors.common.util.LogCategory;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,10 +22,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordService passwordService;
 
     @Autowired
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PasswordService passwordService) {
         this.authService = authService;
+        this.passwordService = passwordService;
     }
 
     @PostMapping("/register")
@@ -39,26 +43,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            LoginResponse response = authService.login(
-                    loginRequest.getUsername(),
-                    loginRequest.getPassword()
-            );
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(response);
-        } catch (BadCredentialsException e) {
-            log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), loginRequest.getUsername());
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
-        } catch (DisabledException e) {
-            log.warn(LogCategory.user("Login failed - Email not verified for username: {}"), loginRequest.getUsername());
-            return ResponseEntity
-                    .status(HttpStatus.FORBIDDEN)
-                    .body(new ErrorResponse("Email not verified", HttpStatus.FORBIDDEN.value()));
-        }
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(authService.login(
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
+                ));
     }
+
+//    @PostMapping("/refresh-token")
+//    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+//        return ResponseEntity
+//                .status(HttpStatus.OK)
+//                .body(authService.refreshToken(request.getRefreshToken()));
+//    }
 
     /* Change password required the user to be authenticated,
        so maybe better handled in UserController
@@ -94,6 +92,37 @@ public class AuthController {
 //                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
 //        }
 //    }
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        try {
+            // Get the authenticated user's username
+            org.springframework.security.core.Authentication authentication =
+                    org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+
+            // Check if user is authenticated
+            if (authentication == null || !authentication.isAuthenticated() ||
+                    "anonymousUser".equals(authentication.getPrincipal())) {
+                log.warn(LogCategory.user("Change password failed - User not authenticated"));
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("Authentication required", HttpStatus.UNAUTHORIZED.value()));
+            }
+
+            String username = authentication.getName();
+            log.info(LogCategory.user("Change password attempt - user: {}"), username);
+
+            passwordService.changePassword(username, request.getOldPassword(), request.getNewPassword());
+
+            log.info(LogCategory.user("Password changed successfully - user: {}"), username);
+            return ResponseEntity.ok(new MessageResponse("Password changed successfully"));
+
+        } catch (RuntimeException e) {
+            log.warn(LogCategory.user("Change password failed - {}"), e.getMessage());
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value()));
+        }
+    }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
@@ -123,12 +152,37 @@ public class AuthController {
                 .body(authService.verifyEmail(token));
     }
 
+    /**
+     * Handler Spring Security BadCredentialsException
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
         log.warn(LogCategory.user("Login failed - Invalid credentials for username: {}"), ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    /**
+     * Handler Spring Security UsernameNotFoundException
+     */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        log.warn(LogCategory.user("Login failed - User not found: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Invalid username or password", HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    /**
+     * Handler Spring Security DisabledException
+     */
+    @ExceptionHandler(DisabledException.class)
+    public ResponseEntity<ErrorResponse> handleDisabledException(DisabledException ex) {
+        log.warn(LogCategory.user("Login failed - User account is not verified: {}"), ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse("User account is not verified", HttpStatus.FORBIDDEN.value()));
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
@@ -192,4 +246,23 @@ public class AuthController {
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorResponse("An internal server error occurred", HttpStatus.INTERNAL_SERVER_ERROR.value()));
     }
+
+    @PostMapping("/logout")
+        public ResponseEntity<?> logout(
+                @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                String shortenedToken = token.substring(0, Math.min(8, token.length()));
+                log.info(LogCategory.user("Logout request - token: {}..."), shortenedToken);
+        }
+
+        // For JWT-based auth, logout is handled client-side by removing the token
+        // If you implement token blacklisting, add that logic here
+
+        log.info(LogCategory.user("Logout successful"));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new MessageResponse("Logged out successfully"));
+        }
 }

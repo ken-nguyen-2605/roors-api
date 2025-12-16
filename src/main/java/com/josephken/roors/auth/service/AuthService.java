@@ -1,10 +1,11 @@
 package com.josephken.roors.auth.service;
 
-import com.josephken.roors.auth.JwtUtil;
+import com.josephken.roors.auth.util.JwtUtil;
 import com.josephken.roors.auth.dto.LoginResponse;
 import com.josephken.roors.auth.dto.MessageResponse;
 import com.josephken.roors.auth.dto.RegisterResponse;
 import com.josephken.roors.auth.entity.User;
+import com.josephken.roors.auth.entity.UserRole;
 import com.josephken.roors.auth.exception.EmailNotFoundException;
 import com.josephken.roors.auth.exception.EmailNotVerifiedException;
 import com.josephken.roors.auth.exception.InvalidTokenException;
@@ -12,6 +13,7 @@ import com.josephken.roors.auth.exception.UserAlreadyExistsException;
 import com.josephken.roors.auth.repository.UserRepository;
 import com.josephken.roors.common.util.LogCategory;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,6 +27,9 @@ import java.util.UUID;
 @Slf4j
 @Service
 public class AuthService {
+    @Value("${app.security.max-device-sessions:5}") // Configurable in application.properties
+    private int MAX_SESSION_LIMIT;
+
     private final UserRepository userRepository;
     private final EmailService emailService;
     private final AuthenticationManager authenticationManager;
@@ -70,6 +75,7 @@ public class AuthService {
         newUser.setVerified(false);
         newUser.setVerifyToken(verifyToken);
         newUser.setVerifyTokenExpiry(LocalDateTime.now().plusHours(24));
+        newUser.setRole(UserRole.CUSTOMER);
         userRepository.save(newUser);
         log.info(LogCategory.user("Registration successful - username: {}"), username);
 
@@ -91,14 +97,16 @@ public class AuthService {
         );
 
         User user = (User) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(user.getUsername());
+        String token = jwtUtil.generateToken(user);
+        // Guard against legacy rows with null role
+        var role = user.getRole() != null ? user.getRole().name() : UserRole.CUSTOMER.name();
 
         if (!user.isVerified()) {
             throw new EmailNotVerifiedException("Email not verified for user: " + username);
         }
 
         log.info(LogCategory.user("Login successful - username: {}"), username);
-        return new LoginResponse(token);
+        return new LoginResponse(token, user.getUsername(), role);
     }
 
     public MessageResponse forgotPassword(String email) {

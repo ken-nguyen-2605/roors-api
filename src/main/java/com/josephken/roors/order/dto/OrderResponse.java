@@ -37,6 +37,13 @@ public class OrderResponse {
     private LocalDateTime completedAt;
     private LocalDateTime cancelledAt;
     private String cancellationReason;
+    // NEW: Rating fields
+    private Integer rating;
+    private String feedback;
+    private LocalDateTime ratedAt;
+    private String adminResponse;
+    private LocalDateTime respondedAt;
+
     private PaymentResponse payment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

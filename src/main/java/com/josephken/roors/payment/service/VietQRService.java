@@ -31,13 +31,21 @@ public class VietQRService {
     public String generateVietQR(String bankCode, String accountNumber, String accountName, 
                                   BigDecimal amount, String addInfo) {
         try {
-            String template = "compact"; // compact, compact2, print, or qr_only
+            log.info("Original amount: {}", amount);
+            log.info("Amount toString: {}", amount.toString());
+            log.info("Amount toPlainString: {}", amount.toPlainString());
+            log.info("Amount longValue: {}", amount.longValue());
+
+            String template = "qr_only"; // compact, compact2, print, or qr_only
             
             String baseUrl = String.format("https://img.vietqr.io/image/%s-%s-%s.jpg",
                     bankCode, accountNumber, template);
-            
+
+            // ✅ Use longValue() - NOT toString()
+            long amountInVND = amount.longValue();
+
             StringBuilder urlBuilder = new StringBuilder(baseUrl);
-            urlBuilder.append("?amount=").append(amount.toString());
+            urlBuilder.append("?amount=").append(amountInVND);
             urlBuilder.append("&addInfo=").append(encodeValue(addInfo));
             urlBuilder.append("&accountName=").append(encodeValue(accountName));
             

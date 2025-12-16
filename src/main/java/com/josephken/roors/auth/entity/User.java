@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -46,8 +48,15 @@ public class User implements UserDetails {
     @Column(name = "member_since", updatable = false)
     private LocalDateTime memberSince;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role = UserRole.CUSTOMER;
+
     @Column(name = "is_verified")
     private boolean isVerified = false;
+
+    @Column(name = "is_disabled")
+    private boolean isDisabled = false;
     
     @Column(name = "verify_token")
     private String verifyToken;
@@ -75,11 +84,10 @@ public class User implements UserDetails {
             memberSince = LocalDateTime.now();
         }
     }
-
     // UserDetails methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
@@ -99,6 +107,7 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isVerified;
+        return isVerified && !isDisabled;
     }
+
 }
