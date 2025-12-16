@@ -7,9 +7,10 @@ import java.math.BigDecimal;
 
 @Data
 @AllArgsConstructor
-public class TopSellingItem {
-    private Long menuItemId;
-    private String name;
-    private long totalQuantity;
-    private BigDecimal totalRevenue;
+public class CategorySales {
+    private String categoryName;
+    private long orderCount;
+    private BigDecimal revenue;
 }
+
+

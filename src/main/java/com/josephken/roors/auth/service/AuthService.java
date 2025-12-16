@@ -1,44 +1,37 @@
 package com.josephken.roors.auth.service;
 
-import com.josephken.roors.auth.dto.RefreshTokenResponse;
-import com.josephken.roors.auth.entity.RefreshToken;
-import com.josephken.roors.auth.entity.UserRole;
 import com.josephken.roors.auth.util.JwtUtil;
 import com.josephken.roors.auth.dto.LoginResponse;
 import com.josephken.roors.auth.dto.MessageResponse;
 import com.josephken.roors.auth.dto.RegisterResponse;
 import com.josephken.roors.auth.entity.User;
+import com.josephken.roors.auth.entity.UserRole;
 import com.josephken.roors.auth.exception.EmailNotFoundException;
 import com.josephken.roors.auth.exception.EmailNotVerifiedException;
 import com.josephken.roors.auth.exception.InvalidTokenException;
 import com.josephken.roors.auth.exception.UserAlreadyExistsException;
 import com.josephken.roors.auth.repository.UserRepository;
-import com.josephken.roors.common.exception.BusinessException;
 import com.josephken.roors.common.util.LogCategory;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthService {
     @Value("${app.security.max-device-sessions:5}") // Configurable in application.properties
     private int MAX_SESSION_LIMIT;
 
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final RefreshTokenService refreshTokenService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
@@ -46,6 +39,21 @@ public class AuthService {
 
     private final String RESEND_EMAIL_RESPONSE = "Verification email resent. Please check your inbox.";
     private final String FORGOT_PASSWORD_RESPONSE = "Password reset email sent. Please check your inbox.";
+
+    @Autowired
+    public AuthService(UserRepository userRepository,
+                          EmailService emailService,
+                          AuthenticationManager authenticationManager,
+                          JwtUtil jwtUtil,
+                          PasswordEncoder passwordEncoder,
+                          PasswordService passwordService) {
+        this.userRepository = userRepository;
+        this.emailService = emailService;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
+    }
 
     public RegisterResponse register(String email, String username, String password) {
         log.info(LogCategory.user("Registration attempt - username: {}, email: {}"), username, email);
@@ -64,10 +72,10 @@ public class AuthService {
         newUser.setEmail(email);
         newUser.setUsername(username);
         newUser.setPassword(passwordEncoder.encode(password));
-        newUser.setRole(UserRole.CUSTOMER);
         newUser.setVerified(false);
         newUser.setVerifyToken(verifyToken);
         newUser.setVerifyTokenExpiry(LocalDateTime.now().plusHours(24));
+        newUser.setRole(UserRole.CUSTOMER);
         userRepository.save(newUser);
         log.info(LogCategory.user("Registration successful - username: {}"), username);
 
@@ -89,47 +97,16 @@ public class AuthService {
         );
 
         User user = (User) authentication.getPrincipal();
+        String token = jwtUtil.generateToken(user);
+        // Guard against legacy rows with null role
+        var role = user.getRole() != null ? user.getRole().name() : UserRole.CUSTOMER.name();
 
         if (!user.isVerified()) {
             throw new EmailNotVerifiedException("Email not verified for user: " + username);
         }
 
-        List<RefreshToken> activeTokens = refreshTokenService.getActiveTokensForUser(user.getId());
-        if (activeTokens.size() >= MAX_SESSION_LIMIT) {
-            refreshTokenService.deleteOldestActiveTokens(user.getId());
-            log.info(LogCategory.user("Max session limit reached. Oldest session revoked - username: {}"), username);
-        }
-
-        String accessToken = jwtUtil.generateToken(user);
-        String refreshToken = refreshTokenService.createRefreshToken(user);
-
         log.info(LogCategory.user("Login successful - username: {}"), username);
-        return new LoginResponse(accessToken, refreshToken);
-    }
-
-    public RefreshTokenResponse refreshToken(String rawRefreshToken) {
-        RefreshToken oldToken = refreshTokenService.getRefreshToken(rawRefreshToken);
-
-        if (oldToken.isRevoked()) {
-            refreshTokenService.revokeTokensByFamilyId(oldToken.getFamilyId());
-            throw new BusinessException("Security Alert: Token reuse detected. You have been logged out.");
-        }
-
-        if (oldToken.getExpiresAt().isBefore(Instant.now())) {
-            throw new BusinessException("Refresh Token Expired. Please login again.");
-        }
-
-        // Refresh Token Rotation
-        // 1. Revoke old token
-        refreshTokenService.revokeRefreshToken(oldToken);
-
-        // 2. Generate new tokens
-        User user = oldToken.getUser();
-        UUID familyId = oldToken.getFamilyId();
-        String newAccessToken = jwtUtil.generateToken(user);
-        String newRefreshToken = refreshTokenService.createRefreshToken(user, familyId);
-
-        return new RefreshTokenResponse(newAccessToken, newRefreshToken);
+        return new LoginResponse(token, user.getUsername(), role);
     }
 
     public MessageResponse forgotPassword(String email) {

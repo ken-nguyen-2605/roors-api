@@ -87,6 +87,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/webhooks/**").permitAll()
                         .requestMatchers("/", "/welcome", "/health").permitAll()
+                        .requestMatchers("/api/reservations/**").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers("/api/categories/**", "/api/menu/**").permitAll()
                         .requestMatchers("/api/payments/methods").permitAll()

@@ -35,6 +35,13 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, Long> {
            "LOWER(m.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
            "m.isAvailable = true")
     Page<MenuItem> searchAvailableMenuItems(@Param("keyword") String keyword, Pageable pageable);
+
+    @Query("SELECT m FROM MenuItem m WHERE " +
+           "LOWER(m.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(m.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    Page<MenuItem> searchAllMenuItems(@Param("keyword") String keyword, Pageable pageable);
+
+    Page<MenuItem> findByCategory(Category category, Pageable pageable);
     
     @Query("SELECT m FROM MenuItem m WHERE " +
            "m.price BETWEEN :minPrice AND :maxPrice AND " +

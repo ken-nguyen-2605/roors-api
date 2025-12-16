@@ -9,6 +9,7 @@ import com.josephken.roors.order.entity.Order;
 import com.josephken.roors.order.entity.OrderItem;
 import com.josephken.roors.order.entity.OrderStatus;
 import com.josephken.roors.order.repository.OrderRepository;
+import com.josephken.roors.order.repository.OrderItemRepository;
 import com.josephken.roors.payment.dto.PaymentResponse;
 import com.josephken.roors.payment.entity.Payment;
 import com.josephken.roors.payment.service.PaymentService;
@@ -40,6 +41,7 @@ import jakarta.persistence.EntityNotFoundException;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
     private final UserService userService;
     private final MenuItemRepository menuItemRepository;
     private final PaymentService paymentService;
@@ -285,6 +287,10 @@ public class OrderService {
         order.setCancellationReason(request.getReason());
 
         Order cancelledOrder = orderRepository.save(order);
+
+        // Send order cancelled email
+        emailService.sendOrderCancelledEmail(user, cancelledOrder);
+
         log.info(LogCategory.order("Order cancelled successfully: " + orderId));
 
         return mapToResponse(cancelledOrder, null);
@@ -436,12 +442,20 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with ID: " + orderId));
 
+        OrderStatus previousStatus = order.getStatus();
+
         // 2. Update the status
-        // Note: If you use an Enum for status, convert string to Enum here
         order.setStatus(newStatus);
 
         // 3. Save and return the updated order
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        // When order transitions to COMPLETED, send rating request email
+        if (previousStatus != OrderStatus.COMPLETED && newStatus == OrderStatus.COMPLETED) {
+            emailService.sendOrderCompletedRatingRequestEmail(order.getUser(), savedOrder);
+        }
+
+        return savedOrder;
     }
 
     // NEW: Get orders with ratings
@@ -511,6 +525,27 @@ public class OrderService {
         item.setDishRatedAt(LocalDateTime.now());
         
         Order savedOrder = orderRepository.save(order);
+
+        // Update menu item rating based on average of all dish ratings
+        MenuItem menuItem = item.getMenuItem();
+        if (menuItem != null) {
+            Double averageRating = orderItemRepository.calculateAverageRatingByMenuItemId(menuItem.getId());
+            Long reviewCount = orderItemRepository.countRatingsByMenuItemId(menuItem.getId());
+
+            // Round to 2 decimal places
+            if (averageRating != null) {
+                menuItem.setRating(Math.round(averageRating * 100.0) / 100.0);
+            } else {
+                menuItem.setRating(0.0);
+            }
+
+            menuItem.setReviewCount(reviewCount != null ? reviewCount.intValue() : 0);
+            menuItemRepository.save(menuItem);
+
+            log.info(LogCategory.order("Updated menu item rating for " + menuItem.getName() +
+                    ": " + menuItem.getRating() + " (from " + reviewCount + " reviews)"));
+        }
+
         return convertToResponse(savedOrder);
     }
 

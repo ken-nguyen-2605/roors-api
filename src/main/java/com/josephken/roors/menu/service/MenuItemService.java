@@ -3,10 +3,12 @@ package com.josephken.roors.menu.service;
 import com.josephken.roors.menu.dto.MenuItemRequest;
 import com.josephken.roors.menu.dto.MenuItemResponse;
 import com.josephken.roors.menu.dto.CategoryResponse;
+import com.josephken.roors.menu.dto.DishRatingResponse;
 import com.josephken.roors.menu.entity.Category;
 import com.josephken.roors.menu.entity.MenuItem;
 import com.josephken.roors.menu.repository.CategoryRepository;
 import com.josephken.roors.menu.repository.MenuItemRepository;
+import com.josephken.roors.order.repository.OrderItemRepository;
 import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 @Slf4j
@@ -28,6 +31,7 @@ public class MenuItemService {
 
     private final MenuItemRepository menuItemRepository;
     private final CategoryRepository categoryRepository;
+    private final OrderItemRepository orderItemRepository;
 
     @Transactional(readOnly = true)
     public Page<MenuItemResponse> getAllMenuItems(int page, int size, String sortBy, String sortDir) {
@@ -51,6 +55,40 @@ public class MenuItemService {
         
         Pageable pageable = PageRequest.of(page, size);
         return menuItemRepository.findByCategoryAndIsAvailableTrue(category, pageable)
+                .map(this::mapToResponse);
+    }
+
+    // Admin methods - return all items including unavailable
+    @Transactional(readOnly = true)
+    public Page<MenuItemResponse> getAllMenuItemsForAdmin(int page, int size, String sortBy, String sortDir) {
+        log.info(LogCategory.menu("Fetching all menu items for admin (including unavailable)"));
+        
+        Sort sort = sortDir.equalsIgnoreCase("desc") 
+                ? Sort.by(sortBy).descending() 
+                : Sort.by(sortBy).ascending();
+        
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return menuItemRepository.findAll(pageable)
+                .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MenuItemResponse> getMenuItemsByCategoryForAdmin(Long categoryId, int page, int size) {
+        log.info(LogCategory.menu("Fetching menu items for category ID (admin): " + categoryId));
+        
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with ID: " + categoryId));
+        
+        Pageable pageable = PageRequest.of(page, size);
+        return menuItemRepository.findByCategory(category, pageable)
+                .map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<MenuItemResponse> searchMenuItemsForAdmin(String keyword, int page, int size) {
+        log.info(LogCategory.menu("Searching menu items with keyword for admin: " + keyword));
+        Pageable pageable = PageRequest.of(page, size);
+        return menuItemRepository.searchAllMenuItems(keyword != null ? keyword : "", pageable)
                 .map(this::mapToResponse);
     }
 
@@ -213,7 +251,19 @@ public class MenuItemService {
         return mapToResponse(updatedMenuItem);
     }
 
-    private MenuItemResponse mapToResponse(MenuItem menuItem) {
+    @Transactional(readOnly = true)
+    public List<DishRatingResponse> getDishRatings(Long menuItemId, int limit) {
+        log.info(LogCategory.menu("Fetching dish ratings for menu item ID: " + menuItemId));
+        
+        List<DishRatingResponse> ratings = orderItemRepository.findRecentRatingsByMenuItemId(menuItemId);
+        
+        // Limit the results
+        return ratings.stream()
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    public MenuItemResponse mapToResponse(MenuItem menuItem) {
         CategoryResponse categoryResponse = new CategoryResponse(
                 menuItem.getCategory().getId(),
                 menuItem.getCategory().getName(),
@@ -246,7 +296,9 @@ public class MenuItemService {
                 menuItem.getReviewCount(),
                 menuItem.getOrderCount(),
                 menuItem.getCreatedAt(),
-                menuItem.getUpdatedAt()
+                menuItem.getUpdatedAt(),
+                null, // isLiked - set separately if needed
+                null  // likeCount - set separately if needed
         );
     }
 
