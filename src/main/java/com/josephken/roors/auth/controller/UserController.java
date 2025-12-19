@@ -5,6 +5,7 @@ import com.josephken.roors.auth.entity.User;
 import com.josephken.roors.auth.exception.UserNotFoundException;
 import com.josephken.roors.auth.repository.UserRepository;
 import com.josephken.roors.auth.service.EmailService;
+import com.josephken.roors.auth.service.UserService;
 import com.josephken.roors.auth.util.AuthenticationHelper;
 import com.josephken.roors.common.util.LogCategory;
 import com.josephken.roors.menu.entity.MenuItem;
@@ -26,7 +27,19 @@ import java.util.stream.Collectors;
 public class UserController {
 
     private final EmailService emailService;
+    private final UserService userService;
     private final UserRepository userRepository;
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal Long currentUserId) {
+        log.info(LogCategory.user("Get current user profile request"));
+
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + currentUserId));
+
+        UserProfileResponse response = buildUserProfileResponse(user);
+        return ResponseEntity.ok(response);
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserProfile(

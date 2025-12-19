@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/menu/likes")
+@RequestMapping("/api/menu-likes")
 @RequiredArgsConstructor
 public class MenuItemLikeController {
 
