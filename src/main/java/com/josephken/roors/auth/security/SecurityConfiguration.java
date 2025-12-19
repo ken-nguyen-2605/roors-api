@@ -89,7 +89,12 @@ public class SecurityConfiguration {
                         .requestMatchers("/", "/welcome", "/health").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
-                        .requestMatchers("/api/categories/**", "/api/menu/**").permitAll()
+
+                        .requestMatchers("/api/menu-likes/*/count").permitAll()
+                        .requestMatchers("/api/menu-likes/**").authenticated()
+                        .requestMatchers("/api/menu/**").permitAll()
+
+                        .requestMatchers("/api/categories/**").permitAll()
                         .requestMatchers("/api/payments/methods").permitAll()
                         .requestMatchers("/api/orders/**", "/api/payments/**").authenticated()
 
