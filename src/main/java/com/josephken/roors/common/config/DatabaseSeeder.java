@@ -46,23 +46,35 @@ public class DatabaseSeeder {
             // ---------------------------------------------------------
             //            // 1. ADMIN USER SEEDING
             // ---------------------------------------------------------
-            if (userRepository.existsByUsername(adminUsername)) {
-                log.info(LogCategory.system("Admin user already exists with username: {}"), adminUsername);
-            } else {
-                User admin = new User();
-                admin.setUsername(adminUsername);
-                admin.setEmail(adminEmail);
-                admin.setPassword(passwordEncoder.encode(adminPassword));
-                admin.setRole(UserRole.MANAGER);
-                admin.setVerified(true);
+            String cleanPassword = adminPassword.trim(); // Remove accidental spaces
+            String cleanUsername = adminUsername.trim();
 
-                userRepository.save(admin);
-                log.info(LogCategory.system("Admin user created with username: {}"), adminUsername);
-            }
+            User admin = userRepository.findByUsername(cleanUsername)
+                    .orElse(new User()); // Get existing or create new
+
+            // Update fields (whether new or existing)
+            admin.setUsername(cleanUsername);
+            admin.setEmail(adminEmail.trim());
+            admin.setPassword(passwordEncoder.encode(cleanPassword)); // Always re-hash
+            admin.setRole(UserRole.MANAGER); // <--- CHANGE THIS from MANAGER to ADMIN
+            admin.setVerified(true);
+            admin.setDisabled(false);
+
+            userRepository.save(admin);
+
+            log.info(LogCategory.system("Admin user synced. Username: {}, Role: {}"),
+                    cleanUsername, admin.getRole());
 
             System.out.println("Admin Username: " + adminUsername);
             System.out.println("Admin Password: " + adminPassword);
             System.out.println("Admin Email: " + adminEmail);
+
+            User savedUser = userRepository.findByUsername(adminUsername).orElse(null);
+            if (savedUser != null) {
+                System.out.println("Admin User ID: " + savedUser.getId());
+            } else {
+                System.out.println("Failed to retrieve Admin User ID.");
+            }
 
             // ---------------------------------------------------------
             // 2. SQL DATA SEEDING (Only if tables are empty)
