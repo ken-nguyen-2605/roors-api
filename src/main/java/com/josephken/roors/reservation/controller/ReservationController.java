@@ -80,6 +80,14 @@ public class ReservationController {
                 .status(HttpStatus.OK)
                 .body(reservationTableService.markReservationAsArrived(id));
     }
+    
+    @PreAuthorize("hasRole('STAFF')")
+    @PatchMapping("/{id}/mark-no-show")
+    public ResponseEntity<ReservationDto> markReservationAsNoShow(@PathVariable Long id) {
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(reservationTableService.markReservationAsNoShow(id));
+    }
 
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<ReservationDto> cancelReservation(

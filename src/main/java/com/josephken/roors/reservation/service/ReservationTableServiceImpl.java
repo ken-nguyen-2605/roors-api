@@ -17,6 +17,7 @@ import com.josephken.roors.reservation.repository.DiningTableRepository;
 import com.josephken.roors.reservation.repository.ReservationRepository;
 import com.josephken.roors.common.util.LogCategory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.josephken.roors.auth.service.EmailService;
@@ -249,6 +250,23 @@ public class ReservationTableServiceImpl implements ReservationTableService {
             throw new IllegalArgumentException("Only confirmed reservations can be marked as arrived.");
         }
         reservation.setStatus(ReservationStatus.ARRIVED);
+
+        log.info(LogCategory.reservation("Reservation with id: {} marked as arrived successfully"), reservationId);
+        return ReservationMapper.toDto(reservationRepository.save(reservation));
+    }
+
+    public ReservationDto markReservationAsNoShow(Long reservationId) {
+        log.info(LogCategory.reservation("Marking reservation with id: {} as arrived"), reservationId);
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("Reservation not found with id: " + reservationId));
+
+        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+            log.warn(LogCategory.reservation("Only confirmed reservations can be marked as arrived. Reservation id: {} has status: {}"),
+                    reservationId, reservation.getStatus());
+            throw new IllegalArgumentException("Only confirmed reservations can be marked as arrived.");
+        }
+        reservation.setStatus(ReservationStatus.NO_SHOW);
 
         log.info(LogCategory.reservation("Reservation with id: {} marked as arrived successfully"), reservationId);
         return ReservationMapper.toDto(reservationRepository.save(reservation));
