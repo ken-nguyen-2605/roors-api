@@ -458,6 +458,12 @@ public class OrderService {
         return savedOrder;
     }
 
+    @Transactional
+    public OrderResponse updateOrderStatusAndReturn(Long orderId, OrderStatus newStatus) {
+        Order order = updateOrderStatus(orderId, newStatus);
+        return convertToResponse(order);
+    }
+
     // NEW: Get orders with ratings
     @Transactional(readOnly = true)
     public Page<OrderResponse> getOrdersWithRatings(Integer rating, Pageable pageable) {

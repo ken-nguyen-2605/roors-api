@@ -1,6 +1,7 @@
 package com.josephken.roors.admin.controller;
 
 import com.josephken.roors.admin.dto.CreateStaffRequest;
+import com.josephken.roors.admin.dto.UserSummaryResponse;
 import com.josephken.roors.admin.dto.AdminUserResponse;
 import com.josephken.roors.admin.dto.UserSummaryResponse;
 import com.josephken.roors.auth.dto.MessageResponse;
@@ -12,12 +13,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import jakarta.validation.Valid;
@@ -33,46 +35,6 @@ public class UserAdminController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @GetMapping
-    public ResponseEntity<List<UserSummaryResponse>> getAllUsers() {
-        List<User> users = userRepository.findAll();
-
-        List<UserSummaryResponse> response = users.stream()
-                .map(user -> UserSummaryResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .role(user.getRole())
-                        .verified(user.isVerified())
-                        .disabled(user.isDisabled())
-                        .build())
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/{id}/disable")
-    public ResponseEntity<MessageResponse> disableUser(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
-
-        user.setDisabled(true);
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new MessageResponse("User disabled successfully"));
-    }
-
-    @PostMapping("/{id}/enable")
-    public ResponseEntity<MessageResponse> enableUser(@PathVariable Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
-
-        user.setDisabled(false);
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new MessageResponse("User enabled successfully"));
-    }
 
     @PostMapping("/{id}/verify-staff")
     public ResponseEntity<MessageResponse> verifyStaff(@PathVariable Long id) {
@@ -104,5 +66,47 @@ public class UserAdminController {
 
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("Staff account created"));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserSummaryResponse>> getAllUsers() {
+        List<UserSummaryResponse> users = userRepository.findAll().stream()
+                .map(u -> UserSummaryResponse.builder()
+                        .id(u.getId())
+                        .username(u.getUsername())
+                        .email(u.getEmail())
+                        .role(u.getRole() != null ? u.getRole() : UserRole.CUSTOMER)
+                        .verified(u.isVerified())
+                        .disabled(u.isDisabled())
+                        .build())
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(users);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MessageResponse> deleteUser(@PathVariable Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.ok(new MessageResponse("User deleted successfully"));
+    }
+
+    @PostMapping("/{id}/disable")
+    public ResponseEntity<MessageResponse> disableUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setDisabled(true);
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("User disabled"));
+    }
+
+    @PostMapping("/{id}/enable")
+    public ResponseEntity<MessageResponse> enableUser(@PathVariable Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        user.setDisabled(false);
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("User enabled"));
     }
 }
